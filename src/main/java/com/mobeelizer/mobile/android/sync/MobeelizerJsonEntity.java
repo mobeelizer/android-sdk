@@ -160,4 +160,13 @@ public class MobeelizerJsonEntity {
         return json.toString();
     }
 
+    @Override
+    public String toString() {
+        try {
+            return getJson();
+        } catch (JSONException e) {
+            return "invalid json";
+        }
+    }
+
 }
