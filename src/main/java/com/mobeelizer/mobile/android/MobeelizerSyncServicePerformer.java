@@ -107,8 +107,10 @@ class MobeelizerSyncServicePerformer {
             database.clearModifiedFlag();
             application.getInternalDatabase().setInitialSyncAsNotRequired(application.getInstance(), application.getUser());
         } catch (IOException e) {
+            success = false;
             Log.e(TAG, e.getMessage(), e);
         } catch (ConnectionException e) {
+            success = false;
             Log.e(TAG, e.getMessage(), e);
         } finally {
             if (outputFile != null && !outputFile.delete()) {
@@ -126,7 +128,7 @@ class MobeelizerSyncServicePerformer {
             }
         }
 
-        return MobeelizerSyncStatus.FINISHED_WITH_SUCCESS;
+        return success ? MobeelizerSyncStatus.FINISHED_WITH_SUCCESS : MobeelizerSyncStatus.FINISHED_WITH_FAILURE;
     }
 
     public void changeStatus(final MobeelizerSyncStatus status) {
