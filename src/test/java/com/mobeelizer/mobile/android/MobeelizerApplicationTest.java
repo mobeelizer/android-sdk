@@ -364,6 +364,7 @@ public class MobeelizerApplicationTest {
         // when
         MobeelizerLoginResponse loginResponse = new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, "0000", "role", true);
         when(connectionManager.login()).thenReturn(loginResponse);
+        when(connectionManager.isNetworkAvailable()).thenReturn(true);
 
         MobeelizerLoginStatus status = application.login("instance", "user", "password");
         application.setSyncStatus(MobeelizerSyncStatus.FINISHED_WITH_SUCCESS);
