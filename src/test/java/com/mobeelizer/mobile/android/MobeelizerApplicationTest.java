@@ -174,6 +174,7 @@ public class MobeelizerApplicationTest {
         MobeelizerLoginResponse loginResponse = new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, "0000", "role", false);
 
         when(connectionManager.login()).thenReturn(loginResponse);
+        when(connectionManager.isNetworkAvailable()).thenReturn(true);
 
         PowerMockito.whenNew(MobeelizerDatabaseImpl.class).withArguments(eq(application), eq(models)).thenReturn(database);
 
