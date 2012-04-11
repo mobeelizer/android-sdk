@@ -32,6 +32,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.ConnectException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,11 +41,13 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
@@ -85,7 +89,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
     @Override
     public MobeelizerLoginResponse login() {
-        boolean networkConnected = isNetworkConnected(application.getContext());
+        boolean networkConnected = isNetworkAvailable();
 
         if (!networkConnected) {
             String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
@@ -163,8 +167,10 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         application.getInternalDatabase().clearRoleAndInstanceGuid(application.getInstance(), application.getUser());
     }
 
-    private boolean isNetworkConnected(final Context context) {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    @Override
+    public boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) application.getContext().getSystemService(
+                Context.CONNECTIVITY_SERVICE);
         return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()
                 || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected();
 
@@ -336,7 +342,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         Reader reader = null;
 
         try {
-            HttpResponse response = client.execute(request);
+            HttpResponse response = execute(request, client);
 
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 HttpEntity entity = response.getEntity();
@@ -393,7 +399,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         BufferedOutputStream out = null;
 
         try {
-            HttpResponse response = client.execute(request);
+            HttpResponse response = execute(request, client);
 
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 HttpEntity entity = response.getEntity();
@@ -445,6 +451,22 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         }
     }
 
+    private HttpResponse execute(final HttpRequestBase request, final HttpClient client) throws IOException,
+            ClientProtocolException {
+        try {
+            return client.execute(request);
+        } catch (ConnectException e) {
+            Log.w(TAG, e.getMessage(), e);
+            return client.execute(request);
+        } catch (SocketException e) {
+            Log.w(TAG, e.getMessage(), e);
+            return client.execute(request);
+        } catch (ConnectTimeoutException e) {
+            Log.w(TAG, e.getMessage(), e);
+            return client.execute(request);
+        }
+    }
+
     public static class ConnectionException extends Exception {
 
         private static final long serialVersionUID = 8495472053163912742L;
@@ -461,8 +483,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
     private HttpClient getHttpClient() {
         HttpParams parameters = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(parameters, 3000);
-        HttpConnectionParams.setConnectionTimeout(parameters, 3000);
+        HttpConnectionParams.setConnectionTimeout(parameters, 10000);
         HttpClient client = new DefaultHttpClient(parameters);
         return client;
     }

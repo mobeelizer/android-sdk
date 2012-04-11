@@ -35,6 +35,11 @@ class MobeelizerDevelopmentConnectionManager implements MobeelizerConnectionMana
     }
 
     @Override
+    public boolean isNetworkAvailable() {
+        return false;
+    }
+
+    @Override
     public MobeelizerLoginResponse login() {
         return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, "00000000-0000-0000-0000-000000000000", developmentRole,
                 false);

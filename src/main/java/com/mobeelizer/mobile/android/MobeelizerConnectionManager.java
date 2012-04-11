@@ -26,6 +26,8 @@ import com.mobeelizer.mobile.android.MobeelizerRealConnectionManager.ConnectionE
 
 interface MobeelizerConnectionManager {
 
+    boolean isNetworkAvailable();
+
     MobeelizerLoginResponse login();
 
     String sendSyncAllRequest() throws ConnectionException;

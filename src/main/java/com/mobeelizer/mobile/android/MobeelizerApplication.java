@@ -313,6 +313,12 @@ public class MobeelizerApplication {
             return MobeelizerSyncStatus.NONE;
         }
 
+        if (!connectionManager.isNetworkAvailable()) {
+            Log.w(TAG, "Sync cannot be performed - network is not available.");
+            setSyncStatus(MobeelizerSyncStatus.FINISHED_WITH_FAILURE);
+            return MobeelizerSyncStatus.FINISHED_WITH_FAILURE;
+        }
+
         setSyncStatus(MobeelizerSyncStatus.STARTED);
 
         return new MobeelizerSyncServicePerformer(Mobeelizer.getInstance(), syncAll).sync();
