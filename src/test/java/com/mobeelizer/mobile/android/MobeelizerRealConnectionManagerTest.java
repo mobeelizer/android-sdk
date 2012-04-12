@@ -51,12 +51,14 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Proxy;
 import android.util.Log;
 
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ MobeelizerRealConnectionManager.class, Log.class, DefaultHttpClient.class, HttpGet.class, HttpPost.class })
+@PrepareForTest({ MobeelizerRealConnectionManager.class, Log.class, DefaultHttpClient.class, HttpGet.class, HttpPost.class,
+        Proxy.class })
 public class MobeelizerRealConnectionManagerTest {
 
     private MobeelizerRealConnectionManager connectionManager;
@@ -87,6 +89,10 @@ public class MobeelizerRealConnectionManagerTest {
         PowerMockito.when(Log.class, "i", anyString(), anyString()).thenReturn(0);
         PowerMockito.when(Log.class, "e", anyString(), anyString()).thenReturn(0);
         PowerMockito.when(Log.class, "e", anyString(), anyString(), any(Throwable.class)).thenReturn(0);
+
+        PowerMockito.mockStatic(Proxy.class);
+        PowerMockito.when(Proxy.class, "getHost", any(Context.class)).thenReturn(null);
+        PowerMockito.when(Proxy.class, "getPort", any(Context.class)).thenReturn(-1);
 
         httpClient = PowerMockito.mock(DefaultHttpClient.class);
         whenNew(DefaultHttpClient.class).withArguments(any(HttpParams.class)).thenReturn(httpClient);

@@ -32,22 +32,20 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.ConnectException;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.params.ConnRouteParams;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
@@ -62,6 +60,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.Proxy;
 import android.util.Config;
 import android.util.Log;
 
@@ -171,9 +170,38 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
     public boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) application.getContext().getSystemService(
                 Context.CONNECTIVITY_SERVICE);
+
+        if (isConnected(connectivityManager)) {
+            return true;
+        }
+
+        for (int i = 0; i < 10; i++) {
+            if (isConnecting(connectivityManager)) {
+                // wait for connection
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Log.w(TAG, e.getMessage(), e);
+                    break;
+                }
+
+                if (isConnected(connectivityManager)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isConnecting(final ConnectivityManager connectivityManager) {
+        return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting()
+                || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
+    }
+
+    private boolean isConnected(final ConnectivityManager connectivityManager) {
         return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()
                 || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected();
-
     }
 
     @Override
@@ -341,8 +369,14 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         InputStream is = null;
         Reader reader = null;
 
+        if (!isNetworkAvailable()) {
+            throw new ConnectionException("Cannot execute HTTP request, network connection not available");
+        }
+
+        setProxyIfNecessary(request);
+
         try {
-            HttpResponse response = execute(request, client);
+            HttpResponse response = client.execute(request);
 
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 HttpEntity entity = response.getEntity();
@@ -398,8 +432,14 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         BufferedInputStream in = null;
         BufferedOutputStream out = null;
 
+        if (!isNetworkAvailable()) {
+            throw new ConnectionException("Cannot execute HTTP request, network connection not available");
+        }
+
+        setProxyIfNecessary(request);
+
         try {
-            HttpResponse response = execute(request, client);
+            HttpResponse response = client.execute(request);
 
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 HttpEntity entity = response.getEntity();
@@ -451,20 +491,19 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         }
     }
 
-    private HttpResponse execute(final HttpRequestBase request, final HttpClient client) throws IOException,
-            ClientProtocolException {
-        try {
-            return client.execute(request);
-        } catch (ConnectException e) {
-            Log.w(TAG, e.getMessage(), e);
-            return client.execute(request);
-        } catch (SocketException e) {
-            Log.w(TAG, e.getMessage(), e);
-            return client.execute(request);
-        } catch (ConnectTimeoutException e) {
-            Log.w(TAG, e.getMessage(), e);
-            return client.execute(request);
+    private void setProxyIfNecessary(final HttpRequestBase request) {
+        String proxyHost = Proxy.getHost(application.getContext());
+        if (proxyHost == null) {
+            return;
         }
+
+        int proxyPort = Proxy.getPort(application.getContext());
+        if (proxyPort < 0) {
+            return;
+        }
+
+        HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+        ConnRouteParams.setDefaultProxy(request.getParams(), proxy);
     }
 
     public static class ConnectionException extends Exception {
