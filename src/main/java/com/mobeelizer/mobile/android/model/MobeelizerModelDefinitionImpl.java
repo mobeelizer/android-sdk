@@ -378,7 +378,7 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
 
         ContentValues values = new ContentValues();
 
-        if (entity.getConflictState() == ConflictState.IN_CONFLICT_BECAUSE_OF_YOU) {
+        if (entity.getConflictState() == ConflictState.IN_CONFLICT_BECAUSE_OF_YOU || entity.getFields() == null) {
             values.put(_CONFLICTED, Integer.valueOf(1));
             values.put(_MODIFIED, Integer.valueOf(0));
             updateEntity(database, values, entity.getGuid());
