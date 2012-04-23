@@ -119,6 +119,8 @@ public class MobeelizerApplication {
     private MobeelizerSyncStatus syncStatus = MobeelizerSyncStatus.NONE;
 
     public MobeelizerApplication(final Mobeelizer mobeelizer) {
+        Log.i(TAG, "Creating Mobeelizer SDK " + Mobeelizer.VERSION);
+
         this.mobeelizer = mobeelizer;
         Mobeelizer.setInstance(this);
 

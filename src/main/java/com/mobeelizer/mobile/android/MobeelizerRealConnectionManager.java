@@ -349,6 +349,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         request.setHeader("mas-device-identifier", application.getDeviceIdentifier());
         request.setHeader("mas-user-name", application.getUser());
         request.setHeader("mas-user-password", application.getPassword());
+        request.setHeader("mas-sdk-version", "android-sdk-" + Mobeelizer.VERSION);
     }
 
     private String createQuery(final String... params) {

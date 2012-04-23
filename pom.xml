@@ -70,6 +70,25 @@
 	</dependencies>
 
 	<build>
+		<sourceDirectory>target/filtered-sources/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>src/main/java/</directory>
+				<includes>
+					<include>com/mobeelizer/mobile/android/Mobeelizer.java</include>
+				</includes>
+				<filtering>true</filtering>
+				<targetPath>../filtered-sources/java</targetPath>
+			</resource>
+			<resource>
+				<directory>src/main/java/</directory>
+				<excludes>
+					<exclude>com/mobeelizer/mobile/android/Mobeelizer.java</exclude>
+				</excludes>
+				<filtering>true</filtering>
+				<targetPath>../filtered-sources/java</targetPath>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -147,8 +166,8 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.12</version>
 				<configuration>
-		          <argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=512m</argLine>
-		        </configuration>
+					<argLine>-Xms512m -Xmx1024m -XX:MaxPermSize=512m</argLine>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -53,6 +53,11 @@ import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
  */
 public class Mobeelizer extends Application {
 
+    /**
+     * Version of Mobeelizer SDK.
+     */
+    public static final String VERSION = "${project.version}";
+
     private static MobeelizerApplication instance;
 
     /**
