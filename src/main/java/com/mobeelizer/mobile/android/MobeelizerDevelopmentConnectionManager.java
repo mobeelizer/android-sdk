@@ -21,12 +21,16 @@
 package com.mobeelizer.mobile.android;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 
 class MobeelizerDevelopmentConnectionManager implements MobeelizerConnectionManager {
 
     private static final String SYNC_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE = "Sync is not supported in development mode.";
+
+    private static final String PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE = "Push is not supported in development mode.";
 
     private final String developmentRole;
 
@@ -68,6 +72,17 @@ class MobeelizerDevelopmentConnectionManager implements MobeelizerConnectionMana
     @Override
     public void confirmTask(final String ticket) {
         throw new UnsupportedOperationException(SYNC_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
+    }
+
+    @Override
+    public void registerForRemoteNotifications(final String registrationId) {
+        throw new UnsupportedOperationException(PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
+    }
+
+    @Override
+    public void sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification) {
+        throw new UnsupportedOperationException(PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }
 
 }

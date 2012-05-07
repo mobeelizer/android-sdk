@@ -31,9 +31,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -46,6 +48,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.params.ConnRouteParams;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
@@ -55,6 +58,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -106,8 +110,15 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         try {
             String response;
 
+            String[] params = null;
+            if (application.getRemoteNotificationToken() != null) {
+                params = new String[] { "deviceToken", application.getRemoteNotificationToken(), "deviceType", "android" };
+            } else {
+                params = new String[0];
+            }
+
             try {
-                response = executeGetAndGetString("/authenticate", new String[0]);
+                response = executeGetAndGetString("/authenticate", params);
             } catch (ConnectionException e) {
                 String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
 
@@ -294,6 +305,44 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         executePostAndGetString("/confirm", new String[] { "ticket", ticket }, new Object[0]);
     }
 
+    @Override
+    public void registerForRemoteNotifications(final String registrationId) throws ConnectionException {
+        executePostAndGetString("/registerPushToken", new String[] { "deviceToken", registrationId, "deviceType", "android" },
+                new Object[0]);
+        Log.i(TAG, "Registered for remote notifications with token: " + registrationId);
+    }
+
+    @Override
+    public void sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification) throws ConnectionException {
+        try {
+            JSONObject object = new JSONObject();
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("Sent remote notification ").append(notification).append(" to");
+            if (device != null) {
+                object.put("device", device);
+                logBuilder.append(" device: ").append(device);
+            }
+            if (group != null) {
+                object.put("group", group);
+                logBuilder.append(" group: ").append(group);
+            }
+            if (users != null) {
+                object.put("users", new JSONArray(users));
+                logBuilder.append(" users: ").append(users);
+            }
+            if (device == null && group == null && users == null) {
+                logBuilder.append(" everyone");
+            }
+            object.put("notification", new JSONObject(notification));
+            executePostAndGetString("push", new String[0], object.toString());
+
+            Log.i(TAG, logBuilder.toString());
+        } catch (JSONException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
+    }
+
     private String executeGetAndGetString(final String path, final String[] params) throws ConnectionException {
         HttpGet request = new HttpGet(application.getUrl() + path + createQuery(params));
         setHeaders(request, true);
@@ -304,6 +353,18 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         HttpGet request = new HttpGet(application.getUrl() + path + createQuery(params));
         setHeaders(request, true);
         return executeAndGetFile(request);
+    }
+
+    private String executePostAndGetString(final String path, final String[] params, final String content)
+            throws ConnectionException {
+        HttpPost request = new HttpPost(application.getUrl() + path + createQuery(params));
+        setHeaders(request, true);
+        try {
+            request.setEntity(new StringEntity(content));
+        } catch (UnsupportedEncodingException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
+        return executeAndGetString(request);
     }
 
     private String executePostAndGetString(final String path, final String[] params, final Object[] files)

@@ -21,9 +21,12 @@
 package com.mobeelizer.mobile.android;
 
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 import android.app.Application;
 
+import com.mobeelizer.mobile.android.api.MobeelizerCommunicationStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerDatabase;
 import com.mobeelizer.mobile.android.api.MobeelizerFile;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginCallback;
@@ -321,6 +324,108 @@ public class Mobeelizer extends Application {
      */
     public static MobeelizerFile createFile(final String name, final String guid) {
         return new MobeelizerFileImpl(name, guid);
+    }
+
+    /**
+     * Registers device to receive push notifications.
+     * 
+     * @param registrationId
+     *            obtained c2dm registration id
+     * @since 1.0
+     */
+    public static MobeelizerCommunicationStatus registerForRemoteNotifications(final String registrationId) {
+        return getInstance().registerForRemoteNotifications(registrationId);
+    }
+
+    /**
+     * Sends remote notification to all users on all devices.
+     * 
+     * @param notification
+     *            notification to send
+     * @return communication status
+     * @since 1.0
+     */
+    public static MobeelizerCommunicationStatus sendRemoteNotification(final Map<String, String> notification) {
+        return getInstance().sendRemoteNotification(null, null, null, notification);
+    }
+
+    /**
+     * Sends remote notification to all users on specified device.
+     * 
+     * @param notification
+     *            notification to send
+     * @param device
+     *            device
+     * @return communication status
+     * @since 1.0
+     */
+    public MobeelizerCommunicationStatus sendRemoteNotificationToDevice(final Map<String, String> notification,
+            final String device) {
+        return getInstance().sendRemoteNotification(device, null, null, notification);
+    }
+
+    /**
+     * Sends remote notification to given users.
+     * 
+     * @param notification
+     *            notification to send
+     * @param users
+     *            list of users
+     * @return communication status
+     * @since 1.0
+     */
+    public static MobeelizerCommunicationStatus sendRemoteNotificationToUsers(final Map<String, String> notification,
+            final List<String> users) {
+        return getInstance().sendRemoteNotification(null, null, users, notification);
+    }
+
+    /**
+     * Sends remote notification to given users on specified device.
+     * 
+     * @param notification
+     *            notification to send
+     * @param users
+     *            list of users
+     * @param device
+     *            device
+     * @return communication status
+     * @since 1.0
+     */
+    public static MobeelizerCommunicationStatus sendRemoteNotificationToUsersOnDevice(final Map<String, String> notification,
+            final List<String> users, final String device) {
+        return getInstance().sendRemoteNotification(device, null, users, notification);
+    }
+
+    /**
+     * Sends remote notification to given group.
+     * 
+     * @param notification
+     *            notification to send
+     * @param group
+     *            group
+     * @return communication status
+     * @since 1.0
+     */
+    public static MobeelizerCommunicationStatus sendRemoteNotificationToGroup(final Map<String, String> notification,
+            final String group) {
+        return getInstance().sendRemoteNotification(null, group, null, notification);
+    }
+
+    /**
+     * Sends remote notification to given group on specified device.
+     * 
+     * @param notification
+     *            notification to send
+     * @param group
+     *            group
+     * @param device
+     *            device
+     * @return communication status
+     * @since 1.0
+     */
+    public static MobeelizerCommunicationStatus sendRemoteNotificationToGroupOnDevice(final Map<String, String> notification,
+            final String group, final String device) {
+        return getInstance().sendRemoteNotification(device, group, null, notification);
     }
 
     static void setSyncStatus(final MobeelizerSyncStatus status) {

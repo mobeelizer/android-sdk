@@ -22,7 +22,9 @@ package com.mobeelizer.mobile.android;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import android.content.Context;
@@ -34,6 +36,8 @@ import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.mobeelizer.mobile.android.MobeelizerRealConnectionManager.ConnectionException;
+import com.mobeelizer.mobile.android.api.MobeelizerCommunicationStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncCallback;
@@ -103,6 +107,8 @@ public class MobeelizerApplication {
     private String password;
 
     private boolean loggedIn = false;
+
+    private String remoteNotificationToken;
 
     private MobeelizerDatabaseImpl database;
 
@@ -366,6 +372,28 @@ public class MobeelizerApplication {
         return loggedIn;
     }
 
+    MobeelizerCommunicationStatus registerForRemoteNotifications(final String registrationId) {
+        try {
+            connectionManager.registerForRemoteNotifications(registrationId);
+            remoteNotificationToken = registrationId;
+            return MobeelizerCommunicationStatus.SUCCESS;
+        } catch (ConnectionException e) {
+            Log.e(TAG, e.getMessage(), e);
+            return MobeelizerCommunicationStatus.CONNECTION_FAILURE;
+        }
+    }
+
+    MobeelizerCommunicationStatus sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification) {
+        try {
+            connectionManager.sendRemoteNotification(device, group, users, notification);
+            return MobeelizerCommunicationStatus.SUCCESS;
+        } catch (ConnectionException e) {
+            Log.e(TAG, e.getMessage(), e);
+            return MobeelizerCommunicationStatus.CONNECTION_FAILURE;
+        }
+    }
+
     int getDatabaseVersion() {
         return databaseVersion;
     }
@@ -421,6 +449,10 @@ public class MobeelizerApplication {
 
     String getInstanceGuid() {
         return instanceGuid;
+    }
+
+    String getRemoteNotificationToken() {
+        return remoteNotificationToken;
     }
 
     MobeelizerFileService getFileService() {
