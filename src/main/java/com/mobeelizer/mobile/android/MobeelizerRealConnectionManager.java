@@ -321,7 +321,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
                             new InputStreamBody(new FileInputStream((File) files[1]), (String) files[0]));
                 }
                 for (int i = 0; i < params.length; i += 2) {
-                    entity.addPart(params[0], new StringBody(params[1]));
+                    entity.addPart(params[i], new StringBody(params[i + 1]));
                 }
                 request.setEntity(entity);
             } catch (IOException e) {
@@ -356,7 +356,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         if (params.length > 0) {
             List<NameValuePair> qparams = new ArrayList<NameValuePair>();
             for (int i = 0; i < params.length; i += 2) {
-                qparams.add(new BasicNameValuePair(params[0], params[1]));
+                qparams.add(new BasicNameValuePair(params[i], params[i + 1]));
             }
             return "?" + URLEncodedUtils.format(qparams, "UTF-8");
         } else {
