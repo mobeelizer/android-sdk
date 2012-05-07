@@ -313,6 +313,13 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
     }
 
     @Override
+    public void unregisterForRemoteNotifications(final String registrationId) throws ConnectionException {
+        executePostAndGetString("/unregisterPushToken", new String[] { "deviceToken", registrationId, "deviceType", "android" },
+                new Object[0]);
+        Log.i(TAG, "Unregistered for remote notifications with token: " + registrationId);
+    }
+
+    @Override
     public void sendRemoteNotification(final String device, final String group, final List<String> users,
             final Map<String, String> notification) throws ConnectionException {
         try {
@@ -335,7 +342,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
                 logBuilder.append(" everyone");
             }
             object.put("notification", new JSONObject(notification));
-            executePostAndGetString("push", new String[0], object.toString());
+            executePostAndGetString("/push", new String[0], object.toString());
 
             Log.i(TAG, logBuilder.toString());
         } catch (JSONException e) {

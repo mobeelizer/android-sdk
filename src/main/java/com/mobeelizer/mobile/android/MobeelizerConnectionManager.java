@@ -44,6 +44,8 @@ interface MobeelizerConnectionManager {
 
     void registerForRemoteNotifications(final String registrationId) throws ConnectionException;
 
+    void unregisterForRemoteNotifications(final String remoteNotificationToken) throws ConnectionException;
+
     void sendRemoteNotification(final String device, final String group, final List<String> users,
             final Map<String, String> notification) throws ConnectionException;
 

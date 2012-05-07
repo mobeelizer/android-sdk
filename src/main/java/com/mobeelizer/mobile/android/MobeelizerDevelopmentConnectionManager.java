@@ -80,6 +80,11 @@ class MobeelizerDevelopmentConnectionManager implements MobeelizerConnectionMana
     }
 
     @Override
+    public void unregisterForRemoteNotifications(final String registrationId) {
+        throw new UnsupportedOperationException(PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
+    }
+
+    @Override
     public void sendRemoteNotification(final String device, final String group, final List<String> users,
             final Map<String, String> notification) {
         throw new UnsupportedOperationException(PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);

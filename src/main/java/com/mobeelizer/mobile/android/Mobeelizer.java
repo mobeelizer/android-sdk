@@ -338,6 +338,17 @@ public class Mobeelizer extends Application {
     }
 
     /**
+     * Registers device to receive push notifications.
+     * 
+     * @param registrationId
+     *            obtained c2dm registration id
+     * @since 1.0
+     */
+    public static MobeelizerCommunicationStatus unregisterForRemoteNotifications() {
+        return getInstance().unregisterForRemoteNotifications();
+    }
+
+    /**
      * Sends remote notification to all users on all devices.
      * 
      * @param notification

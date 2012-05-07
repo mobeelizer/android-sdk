@@ -383,6 +383,16 @@ public class MobeelizerApplication {
         }
     }
 
+    public MobeelizerCommunicationStatus unregisterForRemoteNotifications() {
+        try {
+            connectionManager.unregisterForRemoteNotifications(remoteNotificationToken);
+            return MobeelizerCommunicationStatus.SUCCESS;
+        } catch (ConnectionException e) {
+            Log.e(TAG, e.getMessage(), e);
+            return MobeelizerCommunicationStatus.CONNECTION_FAILURE;
+        }
+    }
+
     MobeelizerCommunicationStatus sendRemoteNotification(final String device, final String group, final List<String> users,
             final Map<String, String> notification) {
         try {
