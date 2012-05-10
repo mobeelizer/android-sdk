@@ -374,8 +374,10 @@ public class MobeelizerApplication {
 
     MobeelizerCommunicationStatus registerForRemoteNotifications(final String registrationId) {
         try {
-            connectionManager.registerForRemoteNotifications(registrationId);
             remoteNotificationToken = registrationId;
+            if (isLoggedIn()) {
+                connectionManager.registerForRemoteNotifications(registrationId);
+            }
             return MobeelizerCommunicationStatus.SUCCESS;
         } catch (ConnectionException e) {
             Log.e(TAG, e.getMessage(), e);
@@ -385,6 +387,7 @@ public class MobeelizerApplication {
 
     public MobeelizerCommunicationStatus unregisterForRemoteNotifications() {
         try {
+            checkIfLoggedIn();
             connectionManager.unregisterForRemoteNotifications(remoteNotificationToken);
             return MobeelizerCommunicationStatus.SUCCESS;
         } catch (ConnectionException e) {
