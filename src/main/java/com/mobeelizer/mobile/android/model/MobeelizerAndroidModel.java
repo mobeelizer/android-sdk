@@ -1,5 +1,5 @@
 // 
-// MobeelizerModelDefinitionImpl.java
+// MobeelizerAndroidModel.java
 // 
 // Copyright (C) 2012 Mobeelizer Ltd. All Rights Reserved.
 //
@@ -20,12 +20,9 @@
 
 package com.mobeelizer.mobile.android.model;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.getField;
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.getOptionalField;
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.getValue;
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.getValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,15 +38,16 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerFieldDefinition;
-import com.mobeelizer.mobile.android.api.MobeelizerModelCredentials;
-import com.mobeelizer.mobile.android.api.MobeelizerModelDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelCredentialsDefinition;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity.ConflictState;
+import com.mobeelizer.java.api.MobeelizerField;
+import com.mobeelizer.java.api.MobeelizerModel;
+import com.mobeelizer.java.api.MobeelizerModelCredentials;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldImpl;
+import com.mobeelizer.java.model.MobeelizerModelImpl;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity.ConflictState;
 
-public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition {
+public class MobeelizerAndroidModel implements MobeelizerModel {
 
     private final static String TAG = "mobeelizer:modeldefinition";
 
@@ -63,40 +61,22 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
 
     public static final String _CONFLICTED = "_conflicted";
 
-    private final Class<?> clazz;
-
     private final String tableName;
 
-    private final Field guidField;
-
-    private final Field ownerField;
-
-    private final Field conflictedField;
-
-    private final Field modifiedField;
-
-    private final Field deletedField;
-
-    private final Set<MobeelizerFieldDefinitionImpl> fields;
+    private final Set<MobeelizerAndroidField> fields = new HashSet<MobeelizerAndroidField>();
 
     private final ContentValues valuesForDelete;
 
-    private final String name;
+    private final MobeelizerModelImpl model;
 
-    private final MobeelizerModelCredentials credentials;
+    public MobeelizerAndroidModel(final MobeelizerModelImpl model) {
+        this.model = model;
 
-    public MobeelizerModelDefinitionImpl(final Class<?> clazz, final String name,
-            final MobeelizerModelCredentialsDefinition credentials, final Set<MobeelizerFieldDefinitionImpl> fields) {
-        this.clazz = clazz;
-        this.name = name;
-        this.fields = fields;
-        this.credentials = new MobeelizerModelCredentialsImpl(credentials);
-        tableName = clazz.getSimpleName().toLowerCase(Locale.ENGLISH);
-        guidField = getField(clazz, "guid", String.class);
-        ownerField = getOptionalField(clazz, "owner", String.class);
-        conflictedField = getOptionalField(clazz, "conflicted", Boolean.TYPE);
-        modifiedField = getOptionalField(clazz, "modified", Boolean.TYPE);
-        deletedField = getOptionalField(clazz, "deleted", Boolean.TYPE);
+        for (MobeelizerField field : this.model.getFields()) {
+            fields.add(new MobeelizerAndroidField((MobeelizerFieldImpl) field));
+        }
+
+        tableName = model.getMappingClass().getSimpleName().toLowerCase(Locale.ENGLISH);
         valuesForDelete = new ContentValues();
         valuesForDelete.put(_MODIFIED, 1);
         valuesForDelete.put(_DELETED, 1);
@@ -104,17 +84,17 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
 
     @Override
     public Class<?> getMappingClass() {
-        return clazz;
+        return model.getMappingClass();
     }
 
     @Override
     public String getName() {
-        return name;
+        return model.getName();
     }
 
     @Override
     public MobeelizerModelCredentials getCredentials() {
-        return credentials;
+        return model.getCredentials();
     }
 
     public String getTableName() {
@@ -122,8 +102,8 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
     }
 
     @Override
-    public Set<MobeelizerFieldDefinition> getFields() {
-        return new HashSet<MobeelizerFieldDefinition>(fields);
+    public Set<MobeelizerField> getFields() {
+        return model.getFields();
     }
 
     public boolean exists(final SQLiteDatabase database, final String guid) {
@@ -137,19 +117,19 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
     }
 
     public <T> boolean exists(final SQLiteDatabase database, final T entity) {
-        String guid = (String) getValue(guidField, entity);
+        String guid = (String) getValue(model.getGuidField(), entity);
         return guid != null && exists(database, guid);
     }
 
-    public <T> void create(final SQLiteDatabase database, final T entity, final String owner, final MobeelizerErrorsImpl errors) {
+    public <T> void create(final SQLiteDatabase database, final T entity, final String owner, final MobeelizerErrorsHolder errors) {
         String guid = UUID.randomUUID().toString();
 
         ContentValues values = new ContentValues();
 
-        setValue(guidField, entity, guid);
+        setValue(model.getGuidField(), entity, guid);
 
-        if (ownerField != null) {
-            setValue(ownerField, entity, owner);
+        if (model.getOwnerField() != null) {
+            setValue(model.getOwnerField(), entity, owner);
         }
 
         values.put(_GUID, guid);
@@ -158,31 +138,31 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
         values.put(_DELETED, Integer.valueOf(0));
         values.put(_MODIFIED, Integer.valueOf(1));
 
-        for (MobeelizerFieldDefinitionImpl field : fields) {
+        for (MobeelizerAndroidField field : fields) {
             field.setValueFromEntityToDatabase(values, entity, errors);
         }
 
         if (errors.isValid()) {
-            if (modifiedField != null) {
-                setValue(modifiedField, entity, true);
+            if (model.getModifiedField() != null) {
+                setValue(model.getModifiedField(), entity, true);
             }
 
             insertEntity(database, values);
         } else {
-            setValue(guidField, entity, null);
+            setValue(model.getGuidField(), entity, null);
 
-            if (ownerField != null) {
-                setValue(ownerField, entity, null);
+            if (model.getOwnerField() != null) {
+                setValue(model.getOwnerField(), entity, null);
             }
         }
     }
 
-    public <T> void update(final SQLiteDatabase database, final T entity, final MobeelizerErrorsImpl errors) {
-        String guid = (String) getValue(guidField, entity);
+    public <T> void update(final SQLiteDatabase database, final T entity, final MobeelizerErrorsHolder errors) {
+        String guid = (String) getValue(model.getGuidField(), entity);
 
         ContentValues values = new ContentValues();
 
-        for (MobeelizerFieldDefinitionImpl field : fields) {
+        for (MobeelizerAndroidField field : fields) {
             field.setValueFromEntityToDatabase(values, entity, errors);
         }
 
@@ -191,8 +171,8 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
         if (errors.isValid()) {
             updateEntity(database, values, guid);
 
-            if (modifiedField != null) {
-                setValue(modifiedField, entity, true);
+            if (model.getModifiedField() != null) {
+                setValue(model.getModifiedField(), entity, true);
             }
         }
     }
@@ -228,7 +208,7 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
 
     public <T> void delete(final SQLiteDatabase database, final T entity) {
         database.update(tableName, valuesForDelete, _GUID + " = ? AND " + _DELETED + " = 0",
-                new String[] { (String) getValue(guidField, entity) });
+                new String[] { (String) getValue(model.getGuidField(), entity) });
     }
 
     public void deleteByGuid(final SQLiteDatabase database, final String guid) {
@@ -248,7 +228,7 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
         sql.append(_MODIFIED).append(" INTEGER(1) NOT NULL DEFAULT 0").append(", ");
         sql.append(_CONFLICTED).append(" INTEGER(1) NOT NULL DEFAULT 0");
 
-        for (MobeelizerFieldDefinitionImpl field : fields) {
+        for (MobeelizerAndroidField field : fields) {
             for (String definition : field.getDefinition()) {
                 sql.append(", ").append(definition);
             }
@@ -284,27 +264,27 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
     @SuppressWarnings("unchecked")
     public <T> T getEntity(final Cursor cursor) {
         try {
-            T entity = (T) clazz.newInstance();
+            T entity = (T) model.getMappingClass().newInstance();
 
-            setValue(guidField, entity, cursor.getString(cursor.getColumnIndex(_GUID)));
+            setValue(model.getGuidField(), entity, cursor.getString(cursor.getColumnIndex(_GUID)));
 
-            if (ownerField != null) {
-                setValue(ownerField, entity, cursor.getString(cursor.getColumnIndex(_OWNER)));
+            if (model.getOwnerField() != null) {
+                setValue(model.getOwnerField(), entity, cursor.getString(cursor.getColumnIndex(_OWNER)));
             }
 
-            if (conflictedField != null) {
-                setValue(conflictedField, entity, cursor.getInt(cursor.getColumnIndex(_CONFLICTED)) == 1);
+            if (model.getConflictedField() != null) {
+                setValue(model.getConflictedField(), entity, cursor.getInt(cursor.getColumnIndex(_CONFLICTED)) == 1);
             }
 
-            if (modifiedField != null) {
-                setValue(modifiedField, entity, cursor.getInt(cursor.getColumnIndex(_MODIFIED)) != 0);
+            if (model.getModifiedField() != null) {
+                setValue(model.getModifiedField(), entity, cursor.getInt(cursor.getColumnIndex(_MODIFIED)) != 0);
             }
 
-            if (deletedField != null) {
-                setValue(deletedField, entity, cursor.getInt(cursor.getColumnIndex(_DELETED)) == 1);
+            if (model.getDeletedField() != null) {
+                setValue(model.getDeletedField(), entity, cursor.getInt(cursor.getColumnIndex(_DELETED)) == 1);
             }
 
-            for (MobeelizerFieldDefinitionImpl field : fields) {
+            for (MobeelizerAndroidField field : fields) {
                 field.setValueFromDatabaseToEntity(cursor, entity);
             }
 
@@ -342,14 +322,14 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
 
     public MobeelizerJsonEntity getJsonEntity(final Cursor cursor) {
         MobeelizerJsonEntity entity = new MobeelizerJsonEntity();
-        entity.setModel(name);
+        entity.setModel(model.getName());
         entity.setGuid(cursor.getString(cursor.getColumnIndex(_GUID)));
         entity.setOwner(cursor.getString(cursor.getColumnIndex(_OWNER)));
 
         Map<String, String> values = new HashMap<String, String>();
         values.put("s_deleted", Boolean.toString(cursor.getInt(cursor.getColumnIndex(_DELETED)) == 1));
 
-        for (MobeelizerFieldDefinitionImpl field : fields) {
+        for (MobeelizerAndroidField field : fields) {
             field.setValueFromDatabaseToMap(cursor, values);
         }
         entity.setFields(values);
@@ -393,9 +373,9 @@ public class MobeelizerModelDefinitionImpl implements MobeelizerModelDefinition 
         values.put(_MODIFIED, Integer.valueOf(0));
         values.put(_DELETED, Integer.valueOf(entity.isDeleted() ? 1 : 0));
 
-        MobeelizerErrorsImpl errors = new MobeelizerErrorsImpl();
+        MobeelizerErrorsHolder errors = new MobeelizerErrorsHolder();
 
-        for (MobeelizerFieldDefinitionImpl field : fields) {
+        for (MobeelizerAndroidField field : fields) {
             field.setValueFromMapToDatabase(values, entity.getFields(), errors);
         }
 

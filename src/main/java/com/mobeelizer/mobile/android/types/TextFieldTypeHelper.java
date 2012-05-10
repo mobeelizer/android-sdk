@@ -20,7 +20,7 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -28,13 +28,14 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 
 public class TextFieldTypeHelper extends FieldTypeHelper {
 
     public TextFieldTypeHelper() {
-        super(String.class);
+        super(MobeelizerFieldType.TEXT);
     }
 
     @Override
@@ -47,29 +48,25 @@ public class TextFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected <T> void setNotNullValueFromDatabaseToEntity(final Cursor cursor, final int columnIndex, final T entity,
             final Field field, final Map<String, String> options) {
-        setValue(field, entity, cursor.getString(columnIndex));
+        setValue(field, entity, getType().convertFromDatabaseValueToEntityValue(field, cursor.getString(columnIndex)));
     }
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value, final Field field,
-            final Map<String, String> options, final MobeelizerErrorsImpl errors) {
-        if (((String) value).length() > getMaxLength(options)) {
-            errors.addFieldIsTooLong(field.getName(), getMaxLength(options));
+            final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+        String stringValue = (String) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
+
+        if (!errors.isValid()) {
             return;
         }
 
-        values.put(field.getName(), (String) value);
+        values.put(field.getName(), stringValue);
     }
 
     @Override
     protected void setNullValueFromEntityToDatabase(final ContentValues values, final Field field,
             final Map<String, String> options, final MobeelizerErrors errors) {
         values.put(field.getName(), (String) null);
-    }
-
-    @Override
-    protected Object convertTypeDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        return defaultValue;
     }
 
     @Override

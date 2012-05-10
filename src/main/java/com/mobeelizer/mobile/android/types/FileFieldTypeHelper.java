@@ -20,7 +20,7 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -31,24 +31,25 @@ import org.json.JSONObject;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerFile;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.mobile.android.MobeelizerDatabaseImpl;
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
 import com.mobeelizer.mobile.android.MobeelizerFileImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
-import com.mobeelizer.mobile.android.api.MobeelizerFile;
 
 public class FileFieldTypeHelper extends FieldTypeHelper {
 
-    private static final String _GUID = "_guid";
+    public static final String _GUID = "_guid";
 
-    private static final String _NAME = "_name";
+    public static final String _NAME = "_name";
 
     private static final String JSON_GUID = "guid";
 
     private static final String JSON_NAME = "filename";
 
     public FileFieldTypeHelper() {
-        super(MobeelizerFile.class);
+        super(MobeelizerFieldType.FILE);
     }
 
     @Override
@@ -85,8 +86,12 @@ public class FileFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value, final Field field,
-            final Map<String, String> options, final MobeelizerErrorsImpl errors) {
-        MobeelizerFile file = (MobeelizerFile) value;
+            final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+        MobeelizerFile file = (MobeelizerFile) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
+
+        if (!errors.isValid()) {
+            return;
+        }
 
         values.put(field.getName() + _GUID, file.getGuid());
         values.put(field.getName() + _NAME, file.getName());
@@ -108,16 +113,18 @@ public class FileFieldTypeHelper extends FieldTypeHelper {
     @Override
     public <T> void setValueFromDatabaseToEntity(final Cursor cursor, final T entity, final Field field,
             final Map<String, String> options) {
-        int columnIndex = cursor.getColumnIndex(field.getName() + _GUID);
+        int columnIndex = cursor.getColumnIndex(field.getName() + FileFieldTypeHelper._GUID);
 
         if (cursor.isNull(columnIndex)) {
             return;
         }
 
-        String guid = cursor.getString(columnIndex);
-        String name = cursor.getString(cursor.getColumnIndex(field.getName() + _NAME));
+        String[] file = new String[] { cursor.getString(columnIndex),
+                cursor.getString(cursor.getColumnIndex(field.getName() + FileFieldTypeHelper._NAME)) };
 
-        setValue(field, entity, new MobeelizerFileImpl(name, guid));
+        MobeelizerFile mobeelizerFile = (MobeelizerFile) getType().convertFromDatabaseValueToEntityValue(field, file);
+
+        setValue(field, entity, new MobeelizerFileImpl(mobeelizerFile.getName(), mobeelizerFile.getGuid()));
     }
 
     @Override
@@ -127,11 +134,6 @@ public class FileFieldTypeHelper extends FieldTypeHelper {
                 getSingleDefinition(field.getName() + _GUID, "TEXT(36)", required, null, false) + " REFERENCES "
                         + MobeelizerDatabaseImpl._FILE_TABLE_NAME + "(" + MobeelizerDatabaseImpl._FILE_GUID + ")",
                 getSingleDefinition(field.getName() + _NAME, "TEXT(255)", required, null, false) };
-    }
-
-    @Override
-    protected Object convertTypeDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        return null;
     }
 
     @Override

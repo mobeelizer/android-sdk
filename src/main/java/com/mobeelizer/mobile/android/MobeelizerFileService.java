@@ -31,7 +31,7 @@ import java.util.UUID;
 import android.os.Environment;
 import android.util.Log;
 
-import com.mobeelizer.mobile.android.sync.MobeelizerInputData;
+import com.mobeelizer.java.sync.MobeelizerInputData;
 
 class MobeelizerFileService {
 

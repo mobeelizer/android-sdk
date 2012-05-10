@@ -48,11 +48,11 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
+import com.mobeelizer.java.api.MobeelizerFile;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerReflectionUtil;
 import com.mobeelizer.mobile.android.MobeelizerFileImpl;
 import com.mobeelizer.mobile.android.TestEntity;
-import com.mobeelizer.mobile.android.api.MobeelizerFile;
-import com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ FileFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class, MobeelizerFileImpl.class })
@@ -86,7 +86,7 @@ public class FileFieldTypeHelperTest {
     @Test
     public void shouldGetAccessibleTypes() throws Exception {
         // when
-        Set<Class<?>> types = FieldType.FILE.getAccessibleTypes();
+        Set<Class<?>> types = FieldType.FILE.getType().getAccessibleTypes();
 
         // then
         assertEquals(1, types.size());
@@ -99,7 +99,8 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        when(errors.isValid()).thenReturn(true);
 
         TestEntity entity = new TestEntity();
         entity.setFile(file);
@@ -118,7 +119,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -206,7 +207,7 @@ public class FileFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.FILE.convertDefaultValue(fieldFile, null, options);
+        Object defaultValue = FieldType.FILE.getType().convertDefaultValue(fieldFile, null, options);
 
         // then
         assertNull(defaultValue);
@@ -217,7 +218,7 @@ public class FileFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.FILE.convertDefaultValue(fieldFile, "value", options);
+        Object defaultValue = FieldType.FILE.getType().convertDefaultValue(fieldFile, "value", options);
 
         // then
         assertNull(defaultValue);
@@ -228,7 +229,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -285,7 +286,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -302,7 +303,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("file", "{'guid':'guid','filename':'name'}".replaceAll("'", "\""));

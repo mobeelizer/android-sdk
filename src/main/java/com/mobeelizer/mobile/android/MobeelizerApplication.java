@@ -22,6 +22,7 @@ package com.mobeelizer.mobile.android;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,27 +37,23 @@ import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.mobeelizer.java.api.MobeelizerMode;
+import com.mobeelizer.java.api.MobeelizerModel;
+import com.mobeelizer.java.definition.MobeelizerApplicationDefinition;
+import com.mobeelizer.java.definition.MobeelizerDefinitionConverter;
+import com.mobeelizer.java.definition.MobeelizerDefinitionParser;
+import com.mobeelizer.java.model.MobeelizerModelImpl;
 import com.mobeelizer.mobile.android.MobeelizerRealConnectionManager.ConnectionException;
 import com.mobeelizer.mobile.android.api.MobeelizerCommunicationStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
-import com.mobeelizer.mobile.android.definition.MobeelizerApplicationDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerDefinitionParser;
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerApplication {
 
-    private enum Mode {
-        DEVELOPMENT, TEST, PRODUCTION
-    }
-
     private static final String TAG = "mobeelizer";
-
-    private static final String DEFAULT_TEST_URL = "http://cloud.mobeelizer.com/sync";
-
-    private static final String DEFAULT_PRODUCTION_URL = "http://cloud.mobeelizer.com/sync";
 
     private static final String META_DEVICE = "MOBEELIZER_DEVICE";
 
@@ -88,13 +85,13 @@ public class MobeelizerApplication {
 
     private final int databaseVersion;
 
-    private final Mode mode;
+    private final MobeelizerMode mode;
 
     private final String developmentRole;
 
-    private String definitionXml;
+    private final String url;
 
-    private String url;
+    private String definitionXml;
 
     private String instance;
 
@@ -116,7 +113,7 @@ public class MobeelizerApplication {
 
     private MobeelizerApplicationDefinition definition;
 
-    private final MobeelizerDefinitionManager definitionManager = new MobeelizerDefinitionManager();
+    private final MobeelizerDefinitionConverter definitionConverter = new MobeelizerDefinitionConverter();
 
     private final MobeelizerConnectionManager connectionManager;
 
@@ -156,25 +153,17 @@ public class MobeelizerApplication {
         String stringMode = metaData.getString(META_MODE);
 
         if (stringMode == null) {
-            mode = Mode.DEVELOPMENT;
+            mode = MobeelizerMode.DEVELOPMENT;
         } else {
-            mode = Mode.valueOf(stringMode.toUpperCase(Locale.ENGLISH));
+            mode = MobeelizerMode.valueOf(stringMode.toUpperCase(Locale.ENGLISH));
         }
 
-        if (mode == Mode.DEVELOPMENT && developmentRole == null) {
-            throw new IllegalStateException(META_DEVELOPMENT_ROLE + " must be set in development mode.");
+        if (mode == MobeelizerMode.DEVELOPMENT && developmentRole == null) {
+            throw new IllegalStateException(META_DEVELOPMENT_ROLE + " must be set in development MobeelizerMode.");
         }
 
         if (definitionXml == null) {
             definitionXml = "application.xml";
-        }
-
-        if (url == null) {
-            if (mode == Mode.PRODUCTION) {
-                url = DEFAULT_PRODUCTION_URL;
-            } else {
-                url = DEFAULT_TEST_URL;
-            }
         }
 
         deviceIdentifier = ((TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
@@ -183,7 +172,7 @@ public class MobeelizerApplication {
             throw new IllegalStateException("Could to resolve device identifier.");
         }
 
-        if (mode == Mode.DEVELOPMENT) {
+        if (mode == MobeelizerMode.DEVELOPMENT) {
             connectionManager = new MobeelizerDevelopmentConnectionManager(developmentRole);
         } else {
             connectionManager = new MobeelizerRealConnectionManager(this);
@@ -205,11 +194,11 @@ public class MobeelizerApplication {
     }
 
     public void login(final String user, final String password, final MobeelizerLoginCallback callback) {
-        login(mode == Mode.PRODUCTION ? "production" : "test", user, password, callback);
+        login(mode == MobeelizerMode.PRODUCTION ? "production" : "test", user, password, callback);
     }
 
     public MobeelizerLoginStatus login(final String user, final String password) {
-        return login(mode == Mode.PRODUCTION ? "production" : "test", user, password);
+        return login(mode == MobeelizerMode.PRODUCTION ? "production" : "test", user, password);
     }
 
     void login(final String instance, final String user, final String password, final MobeelizerLoginCallback callback) {
@@ -256,9 +245,13 @@ public class MobeelizerApplication {
 
         loggedIn = true;
 
-        Set<MobeelizerModelDefinitionImpl> models = definitionManager.convert(definition, entityPackage, role);
+        Set<MobeelizerAndroidModel> androidModels = new HashSet<MobeelizerAndroidModel>();
 
-        database = new MobeelizerDatabaseImpl(this, models);
+        for (MobeelizerModel model : definitionConverter.convert(definition, entityPackage, role)) {
+            androidModels.add(new MobeelizerAndroidModel((MobeelizerModelImpl) model));
+        }
+
+        database = new MobeelizerDatabaseImpl(this, androidModels);
         database.open();
 
         if (status.isInitialSyncRequired()) {
@@ -316,7 +309,7 @@ public class MobeelizerApplication {
     }
 
     private MobeelizerSyncStatus sync(final boolean syncAll) {
-        if (mode == Mode.DEVELOPMENT || checkSyncStatus().isRunning()) {
+        if (mode == MobeelizerMode.DEVELOPMENT || checkSyncStatus().isRunning()) {
             Log.w(TAG, "Sync is already running - skipping.");
             return MobeelizerSyncStatus.NONE;
         }
@@ -357,7 +350,7 @@ public class MobeelizerApplication {
         checkIfLoggedIn();
         Log.i(TAG, "Check sync status.");
 
-        if (mode == Mode.DEVELOPMENT) {
+        if (mode == MobeelizerMode.DEVELOPMENT) {
             return MobeelizerSyncStatus.NONE;
         }
 
@@ -458,6 +451,10 @@ public class MobeelizerApplication {
 
     String getUrl() {
         return url;
+    }
+
+    MobeelizerMode getMode() {
+        return mode;
     }
 
     String getInstanceGuid() {

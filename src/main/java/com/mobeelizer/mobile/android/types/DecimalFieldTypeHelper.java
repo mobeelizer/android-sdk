@@ -20,7 +20,7 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -29,42 +29,22 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 
 public class DecimalFieldTypeHelper extends FieldTypeHelper {
 
     public DecimalFieldTypeHelper() {
-        super(Double.class, Double.TYPE, Float.class, Float.TYPE, BigDecimal.class);
+        super(MobeelizerFieldType.DECIMAL);
     }
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value, final Field field,
-            final Map<String, String> options, final MobeelizerErrorsImpl errors) {
-        Double doubleValue = ((Number) value).doubleValue();
+            final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+        Double doubleValue = (Double) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
 
-        boolean includeMaxValue = getIncludeMaxValue(options);
-        boolean includeMinValue = getIncludeMinValue(options);
-        BigDecimal minValue = getMinValue(options);
-        BigDecimal maxValue = getMaxValue(options);
-
-        if (includeMaxValue && doubleValue > maxValue.doubleValue()) {
-            errors.addFieldMustBeLessThanOrEqualTo(field.getName(), maxValue);
-            return;
-        }
-
-        if (!includeMaxValue && doubleValue >= maxValue.doubleValue()) {
-            errors.addFieldMustBeLessThan(field.getName(), maxValue);
-            return;
-        }
-
-        if (includeMinValue && doubleValue < minValue.doubleValue()) {
-            errors.addFieldMustBeGreaterThanOrEqual(field.getName(), minValue);
-            return;
-        }
-
-        if (!includeMinValue && doubleValue <= minValue.doubleValue()) {
-            errors.addFieldMustBeGreaterThan(field.getName(), minValue);
+        if (!errors.isValid()) {
             return;
         }
 
@@ -80,17 +60,7 @@ public class DecimalFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected <T> void setNotNullValueFromDatabaseToEntity(final Cursor cursor, final int columnIndex, final T entity,
             final Field field, final Map<String, String> options) {
-        Double value = cursor.getDouble(columnIndex);
-
-        if (field.getType().equals(Double.TYPE) || field.getType().equals(Double.class)) {
-            setValue(field, entity, value);
-        } else if (field.getType().equals(Float.TYPE) || field.getType().equals(Float.class)) {
-            setValue(field, entity, value.floatValue());
-        } else if (field.getType().equals(BigDecimal.class)) {
-            setValue(field, entity, BigDecimal.valueOf(value));
-        } else {
-            throw new IllegalStateException("Cannot get decimal from '" + field.getType().getCanonicalName() + "'.");
-        }
+        setValue(field, entity, getType().convertFromDatabaseValueToEntityValue(field, cursor.getDouble(columnIndex)));
     }
 
     @Override
@@ -99,21 +69,6 @@ public class DecimalFieldTypeHelper extends FieldTypeHelper {
         int length = getMaxValue(options).setScale(0, BigDecimal.ROUND_FLOOR).toString().length();
         return new String[] { getSingleDefinition(field.getName(), "REAL(" + length + "," + getScale(options) + ")", required,
                 defaultValue == null ? null : ((BigDecimal) defaultValue).toPlainString(), false) };
-    }
-
-    @Override
-    protected Object convertTypeDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        if (defaultValue == null) {
-            return null;
-        } else {
-            try {
-                return new BigDecimal(defaultValue).setScale(getScale(options));
-            } catch (ArithmeticException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            } catch (NumberFormatException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
     }
 
     @Override
@@ -142,18 +97,6 @@ public class DecimalFieldTypeHelper extends FieldTypeHelper {
 
     private BigDecimal getMaxValue(final Map<String, String> options) {
         return options.containsKey("maxValue") ? new BigDecimal(options.get("maxValue")) : BigDecimal.valueOf(Double.MAX_VALUE);
-    }
-
-    private BigDecimal getMinValue(final Map<String, String> options) {
-        return options.containsKey("minValue") ? new BigDecimal(options.get("minValue")) : BigDecimal.valueOf(-Double.MAX_VALUE);
-    }
-
-    private boolean getIncludeMinValue(final Map<String, String> options) {
-        return options.containsKey("includeMinValue") ? "true".equals(options.get("includeMinValue")) : true;
-    }
-
-    private boolean getIncludeMaxValue(final Map<String, String> options) {
-        return options.containsKey("includeMaxValue") ? "true".equals(options.get("includeMaxValue")) : true;
     }
 
     private int getScale(final Map<String, String> options) {

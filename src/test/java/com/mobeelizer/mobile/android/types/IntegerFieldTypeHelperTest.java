@@ -49,9 +49,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerReflectionUtil;
 import com.mobeelizer.mobile.android.TestEntity;
-import com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ IntegerFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class })
@@ -104,7 +104,7 @@ public class IntegerFieldTypeHelperTest {
     @Test
     public void shouldGetAccessibleTypes() throws Exception {
         // when
-        Set<Class<?>> types = FieldType.INTEGER.getAccessibleTypes();
+        Set<Class<?>> types = FieldType.INTEGER.getType().getAccessibleTypes();
 
         // then
         assertEquals(9, types.size());
@@ -138,7 +138,8 @@ public class IntegerFieldTypeHelperTest {
         options.put("maxValue", "1001");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        when(errors.isValid()).thenReturn(true);
 
         TestEntity entity = new TestEntity();
 
@@ -162,7 +163,7 @@ public class IntegerFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -180,7 +181,7 @@ public class IntegerFieldTypeHelperTest {
         options.put("maxValue", "10");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
         entity.setIntegerP(11);
@@ -199,7 +200,7 @@ public class IntegerFieldTypeHelperTest {
         options.put("minValue", "9");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
         entity.setIntegerP(8);
@@ -362,7 +363,7 @@ public class IntegerFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.INTEGER.convertDefaultValue(fieldIntegerP, null, options);
+        Object defaultValue = FieldType.INTEGER.getType().convertDefaultValue(fieldIntegerP, null, options);
 
         // then
         assertNull(defaultValue);
@@ -373,7 +374,7 @@ public class IntegerFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.INTEGER.convertDefaultValue(fieldIntegerP, "10", options);
+        Object defaultValue = FieldType.INTEGER.getType().convertDefaultValue(fieldIntegerP, "10", options);
 
         // then
         assertEquals(10L, defaultValue);
@@ -384,7 +385,7 @@ public class IntegerFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.INTEGER.convertDefaultValue(fieldIntegerO, "-15", options);
+        Object defaultValue = FieldType.INTEGER.getType().convertDefaultValue(fieldIntegerO, "-15", options);
 
         // then
         assertEquals(-15L, defaultValue);
@@ -395,7 +396,7 @@ public class IntegerFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        FieldType.INTEGER.convertDefaultValue(fieldIntegerO, "1a", options);
+        FieldType.INTEGER.getType().convertDefaultValue(fieldIntegerO, "1a", options);
     }
 
     @Test
@@ -403,7 +404,7 @@ public class IntegerFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -441,7 +442,7 @@ public class IntegerFieldTypeHelperTest {
         Cursor cursor = mock(Cursor.class);
         when(cursor.getColumnIndex("integerO")).thenReturn(13);
         when(cursor.isNull(13)).thenReturn(false);
-        when(cursor.getInt(13)).thenReturn(1);
+        when(cursor.getLong(13)).thenReturn(1L);
 
         Map<String, String> map = mock(Map.class);
 
@@ -457,7 +458,7 @@ public class IntegerFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -473,7 +474,7 @@ public class IntegerFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("integerO", "2");

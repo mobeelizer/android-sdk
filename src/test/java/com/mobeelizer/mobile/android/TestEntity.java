@@ -25,7 +25,7 @@ import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.Date;
 
-import com.mobeelizer.mobile.android.api.MobeelizerFile;
+import com.mobeelizer.java.api.MobeelizerFile;
 
 public class TestEntity {
 

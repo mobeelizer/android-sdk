@@ -21,8 +21,7 @@
 package com.mobeelizer.mobile.android.api;
 
 /**
- * Projection used in {@link MobeelizerCriteriaBuilder#setProjection(MobeelizerProjection)}. It represents the SQL's "SELECT"
- * clause.
+ * Projection used in {@link MobeelizerCriteriaBuilder}. It represents the SQL's "SELECT" clause.
  * 
  * @since 1.0
  */

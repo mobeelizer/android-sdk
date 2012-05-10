@@ -30,12 +30,13 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.mobile.android.api.MobeelizerCriteriaBuilder;
 import com.mobeelizer.mobile.android.api.MobeelizerDatabase;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 import com.mobeelizer.mobile.android.search.MobeelizerCriteriaBuilderImpl;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity;
 
 public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
 
@@ -51,20 +52,20 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
 
     private final MobeelizerDatabaseHelper databaseHelper;
 
-    private final Map<Class<?>, MobeelizerModelDefinitionImpl> modelsByClass;
+    private final Map<Class<?>, MobeelizerAndroidModel> modelsByClass;
 
-    private final Map<String, MobeelizerModelDefinitionImpl> modelsByName;
+    private final Map<String, MobeelizerAndroidModel> modelsByName;
 
     private final MobeelizerApplication application;
 
-    public MobeelizerDatabaseImpl(final MobeelizerApplication application, final Set<MobeelizerModelDefinitionImpl> models) {
+    public MobeelizerDatabaseImpl(final MobeelizerApplication application, final Set<MobeelizerAndroidModel> models) {
         this.application = application;
         this.databaseHelper = new MobeelizerDatabaseHelper(application, models);
 
-        Map<Class<?>, MobeelizerModelDefinitionImpl> modelsByClass = new HashMap<Class<?>, MobeelizerModelDefinitionImpl>();
-        Map<String, MobeelizerModelDefinitionImpl> modelsByName = new HashMap<String, MobeelizerModelDefinitionImpl>();
+        Map<Class<?>, MobeelizerAndroidModel> modelsByClass = new HashMap<Class<?>, MobeelizerAndroidModel>();
+        Map<String, MobeelizerAndroidModel> modelsByName = new HashMap<String, MobeelizerAndroidModel>();
 
-        for (MobeelizerModelDefinitionImpl model : models) {
+        for (MobeelizerAndroidModel model : models) {
             modelsByClass.put(model.getMappingClass(), model);
             modelsByName.put(model.getName(), model);
         }
@@ -88,8 +89,8 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
 
     @Override
     public <T> MobeelizerErrors save(final T entity) {
-        MobeelizerModelDefinitionImpl model = getModel(entity.getClass());
-        MobeelizerErrorsImpl errors = new MobeelizerErrorsImpl();
+        MobeelizerAndroidModel model = getModel(entity.getClass());
+        MobeelizerErrorsHolder errors = new MobeelizerErrorsHolder();
 
         if (model.exists(database, entity)) {
             model.update(database, entity, errors);
@@ -117,7 +118,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
 
     @Override
     public <T> void delete(final T entity, final T... otherEntities) {
-        MobeelizerModelDefinitionImpl model = getModel(entity.getClass());
+        MobeelizerAndroidModel model = getModel(entity.getClass());
 
         model.delete(database, entity);
         for (T otherEntity : otherEntities) {
@@ -127,7 +128,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
 
     @Override
     public <T> void delete(final Class<T> clazz, final String... guids) {
-        MobeelizerModelDefinitionImpl model = getModel(clazz);
+        MobeelizerAndroidModel model = getModel(clazz);
 
         for (String guid : guids) {
             model.deleteByGuid(database, guid);
@@ -150,14 +151,14 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     @Override
-    public MobeelizerModelDefinitionImpl getModel(final String name) {
+    public MobeelizerAndroidModel getModel(final String name) {
         if (!modelsByName.containsKey(name)) {
             throw new IllegalStateException("Cannot find model '" + name + "'");
         }
         return modelsByName.get(name);
     }
 
-    private MobeelizerModelDefinitionImpl getModel(final Class<? extends Object> clazz) {
+    private MobeelizerAndroidModel getModel(final Class<? extends Object> clazz) {
         if (!modelsByClass.containsKey(clazz)) {
             throw new IllegalStateException("Cannot find model for class " + clazz.getCanonicalName());
         }
@@ -165,7 +166,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     void lockModifiedFlag() {
-        for (MobeelizerModelDefinitionImpl model : modelsByClass.values()) {
+        for (MobeelizerAndroidModel model : modelsByClass.values()) {
             model.lockModifiedFlag(database);
         }
 
@@ -175,7 +176,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     void unlockModifiedFlag() {
-        for (MobeelizerModelDefinitionImpl model : modelsByClass.values()) {
+        for (MobeelizerAndroidModel model : modelsByClass.values()) {
             model.unlockModifiedFlag(database);
         }
 
@@ -185,7 +186,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     void clearModifiedFlag() {
-        for (MobeelizerModelDefinitionImpl model : modelsByClass.values()) {
+        for (MobeelizerAndroidModel model : modelsByClass.values()) {
             model.clearModifiedFlag(database);
         }
 
@@ -205,7 +206,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
         boolean isTransactionSuccessful = true;
 
         if (clearData) {
-            for (MobeelizerModelDefinitionImpl model : modelsByClass.values()) {
+            for (MobeelizerAndroidModel model : modelsByClass.values()) {
                 model.clearData(localDatabase);
             }
         }

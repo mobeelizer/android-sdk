@@ -25,7 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-import com.mobeelizer.mobile.android.api.MobeelizerFile;
+import com.mobeelizer.java.api.MobeelizerFile;
 
 public class MobeelizerFileImpl implements MobeelizerFile {
 
