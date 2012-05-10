@@ -98,7 +98,6 @@ public class MobeelizerApplicationTest {
 
     private MobeelizerSyncServicePerformer syncPerformer;
 
-    @SuppressWarnings("unchecked")
     @Before
     public void init() throws Exception {
         PowerMockito.mockStatic(Log.class);

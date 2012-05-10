@@ -1,5 +1,5 @@
 // 
-// MobeelizerFieldDefinitionImpl.java
+// MobeelizerAndroidField.java
 // 
 // Copyright (C) 2012 Mobeelizer Ltd. All Rights Reserved.
 //

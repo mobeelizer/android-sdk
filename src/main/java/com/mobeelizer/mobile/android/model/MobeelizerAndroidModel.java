@@ -1,5 +1,5 @@
 // 
-// MobeelizerModelDefinitionImpl.java
+// MobeelizerAndroidModel.java
 // 
 // Copyright (C) 2012 Mobeelizer Ltd. All Rights Reserved.
 //
