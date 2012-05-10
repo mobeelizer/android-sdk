@@ -20,27 +20,29 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.getValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.getValue;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 
 public abstract class FieldTypeHelper {
 
-    private final Set<Class<?>> accessibleTypes;
+    private final MobeelizerFieldType type;
 
-    public FieldTypeHelper(final Class<?>... accessibleTypes) {
-        this.accessibleTypes = new HashSet<Class<?>>(Arrays.asList(accessibleTypes));
+    public FieldTypeHelper(final MobeelizerFieldType type) {
+        this.type = type;
+    }
+
+    protected MobeelizerFieldType getType() {
+        return type;
     }
 
     public <T> void setValueFromDatabaseToEntity(final Cursor cursor, final T entity, final Field field,
@@ -72,7 +74,7 @@ public abstract class FieldTypeHelper {
             final Map<String, String> values, final Field field, final Map<String, String> options);
 
     public <T> void setValueFromEntityToDatabase(final ContentValues values, final T entity, final Field field,
-            final boolean required, final Map<String, String> options, final MobeelizerErrorsImpl errors) {
+            final boolean required, final Map<String, String> options, final MobeelizerErrorsHolder errors) {
         Object value = getValue(field, entity);
 
         if (value == null && required) {
@@ -88,7 +90,7 @@ public abstract class FieldTypeHelper {
     }
 
     protected abstract void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value,
-            final Field field, final Map<String, String> options, final MobeelizerErrorsImpl errors);
+            final Field field, final Map<String, String> options, final MobeelizerErrorsHolder errors);
 
     protected abstract void setNullValueFromEntityToDatabase(final ContentValues values, final Field field,
             final Map<String, String> options, final MobeelizerErrors errors);
@@ -108,17 +110,6 @@ public abstract class FieldTypeHelper {
     protected abstract String[] getTypeDefinition(final Field field, final boolean required, final Object defaultValue,
             final Map<String, String> options);
 
-    public Object convertDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        return convertTypeDefaultValue(field, defaultValue, options);
-    }
-
-    protected abstract Object convertTypeDefaultValue(final Field field, final String defaultValue,
-            final Map<String, String> options);
-
-    public Set<Class<?>> getAccessibleTypes() {
-        return accessibleTypes;
-    }
-
     protected String getSingleDefinition(final String name, final String type, final boolean required, final String defaultValue,
             final boolean quoteDefaultValue) {
         StringBuilder sb = new StringBuilder().append(name).append(" ").append(type);
@@ -136,7 +127,7 @@ public abstract class FieldTypeHelper {
     }
 
     public void setValueFromMapToDatabase(final ContentValues values, final Map<String, String> map, final Field field,
-            final boolean required, final Map<String, String> options, final MobeelizerErrorsImpl errors) {
+            final boolean required, final Map<String, String> options, final MobeelizerErrorsHolder errors) {
         String value = map.get(field.getName());
 
         if (value == null && required) {

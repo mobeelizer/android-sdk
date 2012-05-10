@@ -22,12 +22,12 @@ package com.mobeelizer.mobile.android.types;
 
 import java.lang.reflect.Field;
 import java.util.Map;
-import java.util.Set;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 
 public enum FieldType {
 
@@ -41,22 +41,18 @@ public enum FieldType {
         this.helper = helper;
     }
 
-    public Set<Class<?>> getAccessibleTypes() {
-        return helper.getAccessibleTypes();
+    public MobeelizerFieldType getType() {
+        return helper.getType();
     }
 
     public <T> void setValueFromEntityToDatabase(final ContentValues values, final T entity, final Field field,
-            final boolean required, final Map<String, String> options, final MobeelizerErrorsImpl errors) {
+            final boolean required, final Map<String, String> options, final MobeelizerErrorsHolder errors) {
         helper.setValueFromEntityToDatabase(values, entity, field, required, options, errors);
     }
 
     public <T> void setValueFromDatabaseToEntity(final Cursor cursor, final T entity, final Field field,
             final Map<String, String> options) {
         helper.setValueFromDatabaseToEntity(cursor, entity, field, options);
-    }
-
-    public Object convertDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        return helper.convertDefaultValue(field, defaultValue, options);
     }
 
     public String[] getDefinition(final Field field, final boolean required, final Object defaultValue,
@@ -70,7 +66,7 @@ public enum FieldType {
     }
 
     public void setValueFromMapToDatabase(final ContentValues values, final Map<String, String> map, final Field field,
-            final boolean required, final Map<String, String> options, final MobeelizerErrorsImpl errors) {
+            final boolean required, final Map<String, String> options, final MobeelizerErrorsHolder errors) {
         helper.setValueFromMapToDatabase(values, map, field, required, options, errors);
     }
 

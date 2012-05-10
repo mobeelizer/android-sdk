@@ -20,37 +20,32 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.lang.reflect.Field;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 
 public class DateFieldTypeHelper extends FieldTypeHelper {
 
     public DateFieldTypeHelper() {
-        super(Date.class, Long.class, Long.TYPE, Calendar.class);
+        super(MobeelizerFieldType.DATE);
     }
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value, final Field field,
-            final Map<String, String> options, final MobeelizerErrorsImpl errors) {
+            final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+        Long longValue = (Long) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
 
-        Long longValue = null;
-
-        if (value instanceof Date) {
-            longValue = ((Date) value).getTime();
-        } else if (value instanceof Calendar) {
-            longValue = ((Calendar) value).getTime().getTime();
-        } else {
-            longValue = ((Number) value).longValue();
+        if (!errors.isValid()) {
+            return;
         }
 
         values.put(field.getName(), longValue);
@@ -65,19 +60,7 @@ public class DateFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected <T> void setNotNullValueFromDatabaseToEntity(final Cursor cursor, final int columnIndex, final T entity,
             final Field field, final Map<String, String> options) {
-        Long value = cursor.getLong(columnIndex);
-
-        if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class)) {
-            setValue(field, entity, value);
-        } else if (field.getType().equals(Date.class)) {
-            setValue(field, entity, new Date(value));
-        } else if (field.getType().equals(Calendar.class)) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(new Date(value));
-            setValue(field, entity, calendar);
-        } else {
-            throw new IllegalStateException("Cannot get date from '" + field.getType().getCanonicalName() + "'.");
-        }
+        setValue(field, entity, getType().convertFromDatabaseValueToEntityValue(field, cursor.getLong(columnIndex)));
     }
 
     @Override
@@ -85,19 +68,6 @@ public class DateFieldTypeHelper extends FieldTypeHelper {
             final Map<String, String> options) {
         return new String[] { getSingleDefinition(field.getName(), "INTEGER(19)", required,
                 defaultValue == null ? null : Long.toString(((Date) defaultValue).getTime()), false) };
-    }
-
-    @Override
-    protected Object convertTypeDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        if (defaultValue == null) {
-            return null;
-        } else {
-            try {
-                return new Date(Long.parseLong(defaultValue));
-            } catch (NumberFormatException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
     }
 
     @Override

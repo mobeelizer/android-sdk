@@ -20,7 +20,7 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -28,13 +28,14 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 
 public class BooleanFieldTypeHelper extends FieldTypeHelper {
 
     public BooleanFieldTypeHelper() {
-        super(Boolean.class, Boolean.TYPE);
+        super(MobeelizerFieldType.BOOLEAN);
     }
 
     @Override
@@ -48,32 +49,25 @@ public class BooleanFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected <T> void setNotNullValueFromDatabaseToEntity(final Cursor cursor, final int columnIndex, final T entity,
             final Field field, final Map<String, String> options) {
-        setValue(field, entity, cursor.getInt(columnIndex) == 1);
+        setValue(field, entity, getType().convertFromDatabaseValueToEntityValue(field, cursor.getInt(columnIndex)));
     }
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value, final Field field,
-            final Map<String, String> options, final MobeelizerErrorsImpl errors) {
-        values.put(field.getName(), ((Boolean) value) ? 1 : 0);
+            final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+        Integer intValue = (Integer) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
+
+        if (!errors.isValid()) {
+            return;
+        }
+
+        values.put(field.getName(), intValue);
     }
 
     @Override
     protected void setNullValueFromEntityToDatabase(final ContentValues values, final Field field,
             final Map<String, String> options, final MobeelizerErrors errors) {
         values.put(field.getName(), (Integer) null);
-    }
-
-    @Override
-    protected Object convertTypeDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        if (defaultValue == null) {
-            return null;
-        } else if ("true".equals(defaultValue)) {
-            return true;
-        } else if ("false".equals(defaultValue)) {
-            return false;
-        } else {
-            throw new IllegalStateException("Invalid default value '" + defaultValue + "' for Boolean type.");
-        }
     }
 
     @Override

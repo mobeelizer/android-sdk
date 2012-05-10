@@ -22,6 +22,8 @@ package com.mobeelizer.mobile.android.api;
 
 import java.util.List;
 
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerModel;
 import com.mobeelizer.mobile.android.Mobeelizer;
 
 /**
@@ -40,7 +42,7 @@ public interface MobeelizerDatabase {
      * @return definition of model
      * @since 1.0
      */
-    MobeelizerModelDefinition getModel(final String name);
+    MobeelizerModel getModel(final String name);
 
     /**
      * Prepare the query builder for the given class.

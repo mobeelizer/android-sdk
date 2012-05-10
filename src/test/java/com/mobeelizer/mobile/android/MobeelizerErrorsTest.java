@@ -29,15 +29,16 @@ import java.math.BigDecimal;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.mobeelizer.mobile.android.api.MobeelizerErrorCode;
+import com.mobeelizer.java.api.MobeelizerErrorCode;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
 
 public class MobeelizerErrorsTest {
 
-    private MobeelizerErrorsImpl errors;
+    private MobeelizerErrorsHolder errors;
 
     @Before
     public void init() {
-        errors = new MobeelizerErrorsImpl();
+        errors = new MobeelizerErrorsHolder();
     }
 
     @Test
@@ -60,7 +61,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("field"));
         assertEquals(1, errors.getFieldErrors("field").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors
                 .getFieldErrors("field").get(0);
 
         assertEquals(MobeelizerErrorCode.EMPTY, error.getCode());
@@ -79,7 +80,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name"));
         assertEquals(1, errors.getFieldErrors("name").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors.getFieldErrors("name")
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors.getFieldErrors("name")
                 .get(0);
 
         assertEquals(MobeelizerErrorCode.TOO_LONG, error.getCode());
@@ -99,7 +100,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name"));
         assertEquals(1, errors.getFieldErrors("name").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors.getFieldErrors("name")
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors.getFieldErrors("name")
                 .get(0);
 
         assertEquals(MobeelizerErrorCode.LESS_THAN, error.getCode());
@@ -119,7 +120,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name"));
         assertEquals(1, errors.getFieldErrors("name").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors.getFieldErrors("name")
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors.getFieldErrors("name")
                 .get(0);
 
         assertEquals(MobeelizerErrorCode.LESS_THAN_OR_EQUAL_TO, error.getCode());
@@ -139,7 +140,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name2"));
         assertEquals(1, errors.getFieldErrors("name2").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors
                 .getFieldErrors("name2").get(0);
 
         assertEquals(MobeelizerErrorCode.LESS_THAN, error.getCode());
@@ -159,7 +160,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name3"));
         assertEquals(1, errors.getFieldErrors("name3").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors
                 .getFieldErrors("name3").get(0);
 
         assertEquals(MobeelizerErrorCode.GREATER_THAN, error.getCode());
@@ -179,7 +180,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name3"));
         assertEquals(1, errors.getFieldErrors("name3").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors
                 .getFieldErrors("name3").get(0);
 
         assertEquals(MobeelizerErrorCode.GREATER_THAN_OR_EQUAL_TO, error.getCode());
@@ -199,7 +200,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name3"));
         assertEquals(1, errors.getFieldErrors("name3").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors
                 .getFieldErrors("name3").get(0);
 
         assertEquals(MobeelizerErrorCode.GREATER_THAN, error.getCode());
@@ -219,7 +220,7 @@ public class MobeelizerErrorsTest {
         assertFalse(errors.isFieldValid("name3"));
         assertEquals(1, errors.getFieldErrors("name3").size());
 
-        MobeelizerErrorsImpl.MobeelizerErrorImpl error = (MobeelizerErrorsImpl.MobeelizerErrorImpl) errors
+        MobeelizerErrorsHolder.MobeelizerErrorImpl error = (MobeelizerErrorsHolder.MobeelizerErrorImpl) errors
                 .getFieldErrors("name3").get(0);
 
         assertEquals(MobeelizerErrorCode.NOT_FOUND, error.getCode());

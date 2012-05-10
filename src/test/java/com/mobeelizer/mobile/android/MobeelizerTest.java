@@ -35,8 +35,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.mobeelizer.java.api.MobeelizerFile;
 import com.mobeelizer.mobile.android.api.MobeelizerDatabase;
-import com.mobeelizer.mobile.android.api.MobeelizerFile;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 

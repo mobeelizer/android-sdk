@@ -48,22 +48,26 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.util.Log;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
+import com.mobeelizer.java.api.MobeelizerCredential;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
+import com.mobeelizer.java.definition.MobeelizerModelFieldCredentialsDefinition;
+import com.mobeelizer.java.definition.MobeelizerModelFieldDefinition;
+import com.mobeelizer.java.model.MobeelizerFieldImpl;
 import com.mobeelizer.mobile.android.TestEntity;
-import com.mobeelizer.mobile.android.api.MobeelizerCredential;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelFieldCredentialsDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelFieldDefinition;
 import com.mobeelizer.mobile.android.types.FieldType;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ MobeelizerFieldDefinitionImpl.class, ContentValues.class, Log.class, FieldType.class })
+@PrepareForTest({ MobeelizerAndroidField.class, ContentValues.class, Log.class, FieldType.class, MobeelizerFieldType.class })
 public class MobeelizerFieldDefinitionImplTest {
 
-    private MobeelizerFieldDefinitionImpl definition;
+    private MobeelizerAndroidField definition;
 
     private ContentValues values;
 
-    private FieldType type;
+    private MobeelizerFieldType type;
+
+    private FieldType type2;
 
     private Map<String, String> options;
 
@@ -82,7 +86,7 @@ public class MobeelizerFieldDefinitionImplTest {
 
         options = mock(Map.class);
 
-        type = PowerMockito.mock(FieldType.class);
+        type = PowerMockito.mock(MobeelizerFieldType.class);
         when(type.name()).thenReturn("typeName");
         Set<Class<?>> accessibleTypes = new HashSet<Class<?>>();
         accessibleTypes.add(String.class);
@@ -91,9 +95,14 @@ public class MobeelizerFieldDefinitionImplTest {
         when(type.convertDefaultValue(any(Field.class), eq("11"), any(Map.class))).thenReturn(11);
         when(type.convertDefaultValue(any(Field.class), eq("default"), any(Map.class))).thenReturn("default");
 
+        PowerMockito.mockStatic(MobeelizerFieldType.class);
+        PowerMockito.when(MobeelizerFieldType.valueOf("typeName")).thenReturn(type);
+        PowerMockito.when(MobeelizerFieldType.valueOf("otherTypeName")).thenThrow(new IllegalArgumentException());
+
+        type2 = PowerMockito.mock(FieldType.class);
+
         PowerMockito.mockStatic(FieldType.class);
-        PowerMockito.when(FieldType.valueOf("typeName")).thenReturn(type);
-        PowerMockito.when(FieldType.valueOf("otherTypeName")).thenThrow(new IllegalArgumentException());
+        PowerMockito.when(FieldType.valueOf("typeName")).thenReturn(type2);
 
         radField = mock(MobeelizerModelFieldDefinition.class);
         when(radField.getName()).thenReturn("string");
@@ -107,7 +116,7 @@ public class MobeelizerFieldDefinitionImplTest {
         when(credentials.getReadAllowed()).thenReturn(MobeelizerCredential.ALL);
         when(credentials.getUpdateAllowed()).thenReturn(MobeelizerCredential.ALL);
 
-        definition = new MobeelizerFieldDefinitionImpl(TestEntity.class, radField, credentials);
+        definition = new MobeelizerAndroidField(new MobeelizerFieldImpl(TestEntity.class, radField, credentials));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -116,7 +125,7 @@ public class MobeelizerFieldDefinitionImplTest {
         when(radField.getName()).thenReturn("notExistingFields");
 
         // when
-        new MobeelizerFieldDefinitionImpl(TestEntity.class, radField, credentials);
+        new MobeelizerAndroidField(new MobeelizerFieldImpl(TestEntity.class, radField, credentials));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -125,7 +134,7 @@ public class MobeelizerFieldDefinitionImplTest {
         when(radField.getName()).thenReturn("booleanP");
 
         // when
-        new MobeelizerFieldDefinitionImpl(TestEntity.class, radField, credentials);
+        new MobeelizerAndroidField(new MobeelizerFieldImpl(TestEntity.class, radField, credentials));
     }
 
     @Test
@@ -159,7 +168,7 @@ public class MobeelizerFieldDefinitionImplTest {
     public void shouldNotBeRequired() throws Exception {
         // given
         when(radField.isRequired()).thenReturn(false);
-        definition = new MobeelizerFieldDefinitionImpl(TestEntity.class, radField, credentials);
+        definition = new MobeelizerAndroidField(new MobeelizerFieldImpl(TestEntity.class, radField, credentials));
 
         // when
         boolean required = definition.isRequired();
@@ -173,19 +182,19 @@ public class MobeelizerFieldDefinitionImplTest {
         // given
         TestEntity entity = new TestEntity();
         entity.setString("nameValue");
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         // when
         definition.setValueFromEntityToDatabase(values, entity, errors);
 
         // then
-        verify(type).setValueFromEntityToDatabase(eq(values), eq(entity), any(Field.class), eq(true), eq(options), eq(errors));
+        verify(type2).setValueFromEntityToDatabase(eq(values), eq(entity), any(Field.class), eq(true), eq(options), eq(errors));
     }
 
     @Test
     public void shouldSetEntityValueFromMap() throws Exception {
         // given
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("string", "nameValue");
@@ -194,7 +203,7 @@ public class MobeelizerFieldDefinitionImplTest {
         definition.setValueFromMapToDatabase(values, map, errors);
 
         // then
-        verify(type).setValueFromMapToDatabase(eq(values), eq(map), any(Field.class), eq(true), eq(options), eq(errors));
+        verify(type2).setValueFromMapToDatabase(eq(values), eq(map), any(Field.class), eq(true), eq(options), eq(errors));
     }
 
     @Test
@@ -204,18 +213,19 @@ public class MobeelizerFieldDefinitionImplTest {
         when(radField.isRequired()).thenReturn(false);
         when(radField.getDefaultValue()).thenReturn("11");
 
-        MobeelizerFieldDefinitionImpl definition = new MobeelizerFieldDefinitionImpl(TestEntity.class, radField, credentials);
+        MobeelizerAndroidField definition = new MobeelizerAndroidField(new MobeelizerFieldImpl(TestEntity.class, radField,
+                credentials));
 
         TestEntity entity = new TestEntity();
         entity.setIntegerP(12);
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         // when
         definition.setValueFromEntityToDatabase(values, entity, errors);
 
         // then
-        verify(type).setValueFromEntityToDatabase(eq(values), eq(entity), any(Field.class), eq(false), eq(options), eq(errors));
+        verify(type2).setValueFromEntityToDatabase(eq(values), eq(entity), any(Field.class), eq(false), eq(options), eq(errors));
     }
 
     @Test
@@ -229,7 +239,7 @@ public class MobeelizerFieldDefinitionImplTest {
         definition.setValueFromDatabaseToEntity(cursor, entity);
 
         // then
-        verify(type).setValueFromDatabaseToEntity(eq(cursor), eq(entity), any(Field.class), eq(options));
+        verify(type2).setValueFromDatabaseToEntity(eq(cursor), eq(entity), any(Field.class), eq(options));
     }
 
     @Test
@@ -244,14 +254,14 @@ public class MobeelizerFieldDefinitionImplTest {
         definition.setValueFromDatabaseToMap(cursor, map);
 
         // then
-        verify(type).setValueFromDatabaseToMap(eq(cursor), eq(map), any(Field.class), eq(options));
+        verify(type2).setValueFromDatabaseToMap(eq(cursor), eq(map), any(Field.class), eq(options));
     }
 
     @Test
     public void shouldGetDefinition() throws Exception {
         // given
         String[] expectedDefinition = new String[2];
-        when(type.getDefinition(any(Field.class), eq(true), eq("default"), eq(options))).thenReturn(expectedDefinition);
+        when(type2.getDefinition(any(Field.class), eq(true), eq("default"), eq(options))).thenReturn(expectedDefinition);
 
         // when
         String[] actualDefinition = definition.getDefinition();
@@ -267,10 +277,11 @@ public class MobeelizerFieldDefinitionImplTest {
         when(radField.isRequired()).thenReturn(false);
         when(radField.getDefaultValue()).thenReturn("11");
 
-        MobeelizerFieldDefinitionImpl definition = new MobeelizerFieldDefinitionImpl(TestEntity.class, radField, credentials);
+        MobeelizerAndroidField definition = new MobeelizerAndroidField(new MobeelizerFieldImpl(TestEntity.class, radField,
+                credentials));
 
         String[] expectedDefinition = new String[2];
-        when(type.getDefinition(any(Field.class), eq(false), eq(11), eq(options))).thenReturn(expectedDefinition);
+        when(type2.getDefinition(any(Field.class), eq(false), eq(11), eq(options))).thenReturn(expectedDefinition);
 
         // when
         String[] actualDefinition = definition.getDefinition();

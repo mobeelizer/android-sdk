@@ -49,9 +49,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerReflectionUtil;
 import com.mobeelizer.mobile.android.TestEntity;
-import com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DateFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class })
@@ -89,7 +89,7 @@ public class DateFieldTypeHelperTest {
     @Test
     public void shouldGetAccessibleTypes() throws Exception {
         // when
-        Set<Class<?>> types = FieldType.DATE.getAccessibleTypes();
+        Set<Class<?>> types = FieldType.DATE.getType().getAccessibleTypes();
 
         // then
         assertEquals(4, types.size());
@@ -113,7 +113,8 @@ public class DateFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        when(errors.isValid()).thenReturn(true);
 
         TestEntity entity = new TestEntity();
 
@@ -137,7 +138,7 @@ public class DateFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -254,7 +255,7 @@ public class DateFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.DATE.convertDefaultValue(fieldDate, null, options);
+        Object defaultValue = FieldType.DATE.getType().convertDefaultValue(fieldDate, null, options);
 
         // then
         assertNull(defaultValue);
@@ -265,7 +266,7 @@ public class DateFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.DATE.convertDefaultValue(fieldDate, "10", options);
+        Object defaultValue = FieldType.DATE.getType().convertDefaultValue(fieldDate, "10", options);
 
         // then
         assertEquals(new Date(10L), defaultValue);
@@ -276,7 +277,7 @@ public class DateFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.DATE.convertDefaultValue(fieldDate, "15", options);
+        Object defaultValue = FieldType.DATE.getType().convertDefaultValue(fieldDate, "15", options);
 
         // then
         assertEquals(new Date(15L), defaultValue);
@@ -287,7 +288,7 @@ public class DateFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        FieldType.DATE.convertDefaultValue(fieldDate, "1a", options);
+        FieldType.DATE.getType().convertDefaultValue(fieldDate, "1a", options);
     }
 
     @Test
@@ -295,7 +296,7 @@ public class DateFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -349,7 +350,7 @@ public class DateFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -365,7 +366,7 @@ public class DateFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("date", "2");

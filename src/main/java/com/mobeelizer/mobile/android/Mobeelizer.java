@@ -26,9 +26,9 @@ import java.util.Map;
 
 import android.app.Application;
 
+import com.mobeelizer.java.api.MobeelizerFile;
 import com.mobeelizer.mobile.android.api.MobeelizerCommunicationStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerDatabase;
-import com.mobeelizer.mobile.android.api.MobeelizerFile;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncCallback;
@@ -45,7 +45,6 @@ import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
  * Mobeelizer.login(&quot;user&quot;, &quot;password&quot;);
  * 
  * // get database
- * MobeelizerDatabase database = Mobeelizer.getDatabase();
  * 
  * // logout
  * Mobeelizer.logout();
@@ -78,9 +77,9 @@ public class Mobeelizer extends Application {
      * </pre>
      * 
      * @see #sync()
-     * @see #syncAndWait()
+     * @see #sync(MobeelizerSyncCallback)
      * @see #syncAll()
-     * @see #syncAllAndWait()
+     * @see #syncAll(MobeelizerSyncCallback)
      * @see #BROADCAST_SYNC_STATUS_CHANGE_STATUS
      * @since 1.0
      */
@@ -96,9 +95,9 @@ public class Mobeelizer extends Application {
      * </pre>
      * 
      * @see #sync()
-     * @see #syncAndWait()
+     * @see #sync(MobeelizerSyncCallback)
      * @see #syncAll()
-     * @see #syncAllAndWait()
+     * @see #syncAll(MobeelizerSyncCallback)
      * @see #checkSyncStatus()
      * @see #BROADCAST_SYNC_STATUS_CHANGE
      * @since 1.0

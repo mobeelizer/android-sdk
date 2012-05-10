@@ -26,15 +26,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 class MobeelizerDatabaseHelper extends SQLiteOpenHelper {
 
     private final static String TAG = "mobeelizer:databasehelper";
 
-    private final Set<MobeelizerModelDefinitionImpl> models;
+    private final Set<MobeelizerAndroidModel> models;
 
-    public MobeelizerDatabaseHelper(final MobeelizerApplication application, final Set<MobeelizerModelDefinitionImpl> models) {
+    public MobeelizerDatabaseHelper(final MobeelizerApplication application, final Set<MobeelizerAndroidModel> models) {
         super(application.getContext(), application.getInstanceGuid() + "_" + application.getUser() + "_data", null, application
                 .getDatabaseVersion());
         this.models = models;
@@ -44,7 +44,7 @@ class MobeelizerDatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(final SQLiteDatabase database) {
         Log.i(TAG, "Creating " + models.size() + " tables");
 
-        for (MobeelizerModelDefinitionImpl model : models) {
+        for (MobeelizerAndroidModel model : models) {
             model.onCreate(database);
         }
 
@@ -58,7 +58,7 @@ class MobeelizerDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(final SQLiteDatabase database, final int oldVersion, final int newVersion) {
         Log.i(TAG, "Updating " + models.size() + " tables");
 
-        for (MobeelizerModelDefinitionImpl model : models) {
+        for (MobeelizerAndroidModel model : models) {
             model.onUpgrade(database);
         }
     }

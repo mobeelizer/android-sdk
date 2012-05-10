@@ -20,40 +20,30 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.util.Map;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 
 public class IntegerFieldTypeHelper extends FieldTypeHelper {
 
     public IntegerFieldTypeHelper() {
-        super(Integer.class, Integer.TYPE, Short.class, Short.TYPE, Byte.class, Byte.TYPE, Long.class, Long.TYPE,
-                BigInteger.class);
+        super(MobeelizerFieldType.INTEGER);
     }
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value, final Field field,
-            final Map<String, String> options, final MobeelizerErrorsImpl errors) {
-        Long longValue = ((Number) value).longValue();
+            final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+        Long longValue = (Long) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
 
-        int maxValue = getMaxValue(options);
-        int minValue = getMinValue(options);
-
-        if (longValue > maxValue) {
-            errors.addFieldMustBeLessThan(field.getName(), (long) maxValue);
-            return;
-        }
-
-        if (longValue < minValue) {
-            errors.addFieldMustBeGreaterThan(field.getName(), (long) minValue);
+        if (!errors.isValid()) {
             return;
         }
 
@@ -69,30 +59,7 @@ public class IntegerFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected <T> void setNotNullValueFromDatabaseToEntity(final Cursor cursor, final int columnIndex, final T entity,
             final Field field, final Map<String, String> options) {
-        Long value = cursor.getLong(columnIndex);
-
-        if (field.getType().equals(Integer.TYPE) || field.getType().equals(Integer.class)) {
-            checkRange(value, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            setValue(field, entity, value.intValue());
-        } else if (field.getType().equals(Short.TYPE) || field.getType().equals(Short.class)) {
-            checkRange(value, Short.MIN_VALUE, Short.MAX_VALUE);
-            setValue(field, entity, value.shortValue());
-        } else if (field.getType().equals(Long.TYPE) || field.getType().equals(Long.class)) {
-            setValue(field, entity, value);
-        } else if (field.getType().equals(Byte.TYPE) || field.getType().equals(Byte.class)) {
-            checkRange(value, Byte.MIN_VALUE, Byte.MAX_VALUE);
-            setValue(field, entity, value.byteValue());
-        } else if (field.getType().equals(BigInteger.class)) {
-            setValue(field, entity, BigInteger.valueOf(value));
-        } else {
-            throw new IllegalStateException("Cannot get integer from '" + field.getType().getCanonicalName() + "'.");
-        }
-    }
-
-    private void checkRange(final long value, final int minValue, final int maxValue) {
-        if (value < minValue || value > maxValue) {
-            throw new IllegalStateException("Value " + value + " out of range <" + minValue + "," + maxValue + ">.");
-        }
+        setValue(field, entity, getType().convertFromDatabaseValueToEntityValue(field, cursor.getLong(columnIndex)));
     }
 
     @Override
@@ -104,22 +71,9 @@ public class IntegerFieldTypeHelper extends FieldTypeHelper {
     }
 
     @Override
-    protected Object convertTypeDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        if (defaultValue == null) {
-            return null;
-        } else {
-            try {
-                return Long.parseLong(defaultValue);
-            } catch (NumberFormatException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-    }
-
-    @Override
     protected void setNotNullValueFromDatabaseToMap(final Cursor cursor, final int columnIndex, final Map<String, String> values,
             final Field field, final Map<String, String> options) {
-        values.put(field.getName(), Integer.toString(cursor.getInt(columnIndex)));
+        values.put(field.getName(), Long.toString(cursor.getLong(columnIndex)));
     }
 
     @Override
@@ -142,10 +96,6 @@ public class IntegerFieldTypeHelper extends FieldTypeHelper {
 
     private int getMaxValue(final Map<String, String> options) {
         return options.containsKey("maxValue") ? Integer.valueOf(options.get("maxValue")) : Integer.MAX_VALUE;
-    }
-
-    private int getMinValue(final Map<String, String> options) {
-        return options.containsKey("minValue") ? Integer.valueOf(options.get("minValue")) : Integer.MIN_VALUE;
     }
 
 }

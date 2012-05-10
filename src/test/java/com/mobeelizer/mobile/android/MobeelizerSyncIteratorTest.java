@@ -40,14 +40,14 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerSyncIterator.class, Cursor.class })
 public class MobeelizerSyncIteratorTest {
 
-    private Iterator<MobeelizerModelDefinitionImpl> iterator;
+    private Iterator<MobeelizerAndroidModel> iterator;
 
     private SQLiteDatabase database;
 
@@ -57,7 +57,7 @@ public class MobeelizerSyncIteratorTest {
     @SuppressWarnings("unchecked")
     public void init() {
         database = mock(SQLiteDatabase.class);
-        Collection<MobeelizerModelDefinitionImpl> models = mock(Collection.class);
+        Collection<MobeelizerAndroidModel> models = mock(Collection.class);
         iterator = mock(Iterator.class);
         when(models.iterator()).thenReturn(iterator);
         syncIterator = new MobeelizerSyncIterator(database, models);
@@ -78,8 +78,8 @@ public class MobeelizerSyncIteratorTest {
     @Test
     public void shouldHaveEntities() throws Exception {
         // given
-        MobeelizerModelDefinitionImpl model1 = mock(MobeelizerModelDefinitionImpl.class);
-        MobeelizerModelDefinitionImpl model2 = mock(MobeelizerModelDefinitionImpl.class);
+        MobeelizerAndroidModel model1 = mock(MobeelizerAndroidModel.class);
+        MobeelizerAndroidModel model2 = mock(MobeelizerAndroidModel.class);
 
         when(iterator.hasNext()).thenReturn(true, true, false);
         when(iterator.next()).thenReturn(model1, model2);

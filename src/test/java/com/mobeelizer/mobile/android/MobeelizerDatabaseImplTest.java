@@ -52,11 +52,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.mobeelizer.java.api.MobeelizerModel;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.mobile.android.api.MobeelizerCriteriaBuilder;
-import com.mobeelizer.mobile.android.api.MobeelizerModelDefinition;
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 import com.mobeelizer.mobile.android.search.MobeelizerCriteriaBuilderImpl;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerDatabaseImpl.class, MobeelizerSyncIterator.class, ContentValues.class,
@@ -75,9 +76,9 @@ public class MobeelizerDatabaseImplTest {
     @SuppressWarnings("rawtypes")
     private Class clazzNotExists;
 
-    private MobeelizerModelDefinitionImpl model;
+    private MobeelizerAndroidModel model;
 
-    private Set<MobeelizerModelDefinitionImpl> models;
+    private Set<MobeelizerAndroidModel> models;
 
     private ContentValues contentValues;
 
@@ -90,14 +91,14 @@ public class MobeelizerDatabaseImplTest {
         contentValues = PowerMockito.mock(ContentValues.class);
         PowerMockito.whenNew(ContentValues.class).withNoArguments().thenReturn(contentValues);
 
-        model = mock(MobeelizerModelDefinitionImpl.class);
+        model = mock(MobeelizerAndroidModel.class);
 
         clazzNotExists = String.class;
         clazz = TestEntity.class;
         when(model.getMappingClass()).thenReturn(clazz);
         when(model.getName()).thenReturn("modelName");
 
-        models = new HashSet<MobeelizerModelDefinitionImpl>();
+        models = new HashSet<MobeelizerAndroidModel>();
         models.add(model);
 
         database = mock(SQLiteDatabase.class);
@@ -115,7 +116,7 @@ public class MobeelizerDatabaseImplTest {
     @Test
     public void shouldGetModel() throws Exception {
         // when
-        MobeelizerModelDefinition actualModel = databaseAdapter.getModel("modelName");
+        MobeelizerModel actualModel = databaseAdapter.getModel("modelName");
 
         // then
         assertSame(model, actualModel);
@@ -273,7 +274,7 @@ public class MobeelizerDatabaseImplTest {
         when(model.exists(database, entity)).thenReturn(false);
 
         // when
-        MobeelizerErrorsImpl errors = (MobeelizerErrorsImpl) databaseAdapter.save(entity);
+        MobeelizerErrorsHolder errors = (MobeelizerErrorsHolder) databaseAdapter.save(entity);
 
         // then
         verify(model).create(database, entity, "owner", errors);
@@ -287,7 +288,7 @@ public class MobeelizerDatabaseImplTest {
         when(model.exists(database, entity)).thenReturn(true);
 
         // when
-        MobeelizerErrorsImpl errors = (MobeelizerErrorsImpl) databaseAdapter.save(entity);
+        MobeelizerErrorsHolder errors = (MobeelizerErrorsHolder) databaseAdapter.save(entity);
 
         // then
         verify(model).update(database, entity, errors);
