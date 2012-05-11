@@ -2,7 +2,7 @@
 
 # 1.1.0
 
-This release is initial version.
+Support for push notifications.
 
 [Full changelog](https://github.com/mobeelizer/android-sdk/compare/1.0.0...1.1.0) / [Sources](https://github.com/mobeelizer/android-sdk/tree/1.1.0)
 
