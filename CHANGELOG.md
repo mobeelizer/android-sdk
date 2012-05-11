@@ -1,6 +1,6 @@
 # Changelog
 
-# 1.1.0
+## 1.1.0
 
 Support for push notifications.
 
@@ -8,7 +8,7 @@ Support for push notifications.
 
 * add support for push notifications
 
-# 1.0.0
+## 1.0.0
 
 Initial version.
 
