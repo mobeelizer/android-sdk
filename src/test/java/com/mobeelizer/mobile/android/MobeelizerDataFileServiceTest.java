@@ -47,9 +47,9 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import android.content.Context;
 import android.util.Log;
 
-import com.mobeelizer.mobile.android.sync.MobeelizerInputData;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity;
-import com.mobeelizer.mobile.android.sync.MobeelizerOutputData;
+import com.mobeelizer.java.sync.MobeelizerInputData;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity;
+import com.mobeelizer.java.sync.MobeelizerOutputData;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerDataFileService.class, MobeelizerInputData.class, MobeelizerOutputData.class, Log.class,

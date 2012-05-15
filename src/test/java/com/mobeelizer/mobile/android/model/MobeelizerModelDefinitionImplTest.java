@@ -57,25 +57,29 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
+import com.mobeelizer.java.api.MobeelizerCredential;
+import com.mobeelizer.java.api.MobeelizerField;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerModelCredentialsDefinition;
+import com.mobeelizer.java.model.MobeelizerFieldImpl;
+import com.mobeelizer.java.model.MobeelizerModelImpl;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity.ConflictState;
 import com.mobeelizer.mobile.android.TestEntity;
 import com.mobeelizer.mobile.android.TestSimpleEntity;
-import com.mobeelizer.mobile.android.api.MobeelizerCredential;
-import com.mobeelizer.mobile.android.api.MobeelizerFieldDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelCredentialsDefinition;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity.ConflictState;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ MobeelizerModelDefinitionImpl.class, ContentValues.class, Log.class, DatabaseUtils.class, HashMap.class,
-        MobeelizerErrorsImpl.class })
+@PrepareForTest({ MobeelizerAndroidModel.class, ContentValues.class, Log.class, DatabaseUtils.class, HashMap.class,
+        MobeelizerAndroidField.class, MobeelizerErrorsHolder.class, MobeelizerFieldImpl.class })
 public class MobeelizerModelDefinitionImplTest {
 
-    private MobeelizerFieldDefinitionImpl field;
+    private MobeelizerFieldImpl field;
 
-    private MobeelizerModelDefinitionImpl definition;
+    private MobeelizerAndroidField field2;
 
-    private MobeelizerModelDefinitionImpl simpleDefinition;
+    private MobeelizerAndroidModel definition;
+
+    private MobeelizerAndroidModel simpleDefinition;
 
     private SQLiteDatabase database;
 
@@ -85,17 +89,22 @@ public class MobeelizerModelDefinitionImplTest {
 
     private ContentValues deletedValues;
 
-    private Set<MobeelizerFieldDefinitionImpl> fields;
+    private Set<MobeelizerField> fields;
 
     @Before
     public void init() throws Exception {
         PowerMockito.mockStatic(Log.class);
         PowerMockito.when(Log.class, "i", anyString(), anyString()).thenReturn(0);
 
-        field = mock(MobeelizerFieldDefinitionImpl.class);
+        field = PowerMockito.mock(MobeelizerFieldImpl.class);
         when(field.getName()).thenReturn("field");
 
-        fields = new HashSet<MobeelizerFieldDefinitionImpl>();
+        field2 = mock(MobeelizerAndroidField.class);
+        when(field2.getName()).thenReturn("field");
+
+        PowerMockito.whenNew(MobeelizerAndroidField.class).withArguments(field).thenReturn(field2);
+
+        fields = new HashSet<MobeelizerField>();
         fields.add(field);
 
         database = mock(SQLiteDatabase.class);
@@ -110,8 +119,9 @@ public class MobeelizerModelDefinitionImplTest {
         when(credentials.getDeleteAllowed()).thenReturn(MobeelizerCredential.ALL);
         when(credentials.getReadAllowed()).thenReturn(MobeelizerCredential.ALL);
 
-        definition = new MobeelizerModelDefinitionImpl(TestEntity.class, "modelName", credentials, fields);
-        simpleDefinition = new MobeelizerModelDefinitionImpl(TestSimpleEntity.class, "simpleModelName", credentials, fields);
+        definition = new MobeelizerAndroidModel(new MobeelizerModelImpl(TestEntity.class, "modelName", credentials, fields));
+        simpleDefinition = new MobeelizerAndroidModel(new MobeelizerModelImpl(TestSimpleEntity.class, "simpleModelName",
+                credentials, fields));
 
         uuid = UUID.randomUUID();
 
@@ -140,7 +150,7 @@ public class MobeelizerModelDefinitionImplTest {
     @Test
     public void shouldGetFields() throws Exception {
         // when
-        Set<MobeelizerFieldDefinition> actualFields = definition.getFields();
+        Set<MobeelizerField> actualFields = definition.getFields();
 
         // then
         assertEquals(fields, actualFields);
@@ -243,7 +253,7 @@ public class MobeelizerModelDefinitionImplTest {
         TestEntity entity = new TestEntity();
         entity.setGuid("guid");
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
         when(errors.isValid()).thenReturn(true);
 
         // when
@@ -251,7 +261,7 @@ public class MobeelizerModelDefinitionImplTest {
 
         // then
         verify(values, times(2)).put("_modified", 1);
-        verify(field).setValueFromEntityToDatabase(values, entity, errors);
+        verify(field2).setValueFromEntityToDatabase(values, entity, errors);
         verify(database).update("testentity", values, "_guid = ?", new String[] { "guid" });
         assertTrue(entity.isModified());
     }
@@ -262,14 +272,14 @@ public class MobeelizerModelDefinitionImplTest {
         TestEntity entity = new TestEntity();
         entity.setGuid("guid");
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
         when(errors.isValid()).thenReturn(false);
 
         // when
         definition.update(database, entity, errors);
 
         // then
-        verify(field).setValueFromEntityToDatabase(values, entity, errors);
+        verify(field2).setValueFromEntityToDatabase(values, entity, errors);
         verify(database, never()).update("testentity", values, "_guid = ?", new String[] { "guid" });
         assertFalse(entity.isModified());
     }
@@ -279,7 +289,7 @@ public class MobeelizerModelDefinitionImplTest {
         // given
         TestEntity entity = new TestEntity();
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
         when(errors.isValid()).thenReturn(true);
 
         // when
@@ -293,7 +303,7 @@ public class MobeelizerModelDefinitionImplTest {
         verify(values).put("_owner", "owner");
         verify(values).put("_conflicted", 0);
         verify(values).put("_deleted", 0);
-        verify(field).setValueFromEntityToDatabase(values, entity, errors);
+        verify(field2).setValueFromEntityToDatabase(values, entity, errors);
         verify(database).insert("testentity", null, values);
         assertTrue(entity.isModified());
     }
@@ -303,7 +313,7 @@ public class MobeelizerModelDefinitionImplTest {
         // given
         TestEntity entity = new TestEntity();
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
         when(errors.isValid()).thenReturn(false);
 
         // when
@@ -312,7 +322,7 @@ public class MobeelizerModelDefinitionImplTest {
         // then
         assertNull(entity.getGuid());
         assertNull(entity.getOwner());
-        verify(field).setValueFromEntityToDatabase(values, entity, errors);
+        verify(field2).setValueFromEntityToDatabase(values, entity, errors);
         verify(database, never()).insert("testentity", null, values);
         assertFalse(entity.isModified());
     }
@@ -366,7 +376,7 @@ public class MobeelizerModelDefinitionImplTest {
         assertTrue(entity.isConflicted());
         assertTrue(entity.isModified());
         assertTrue(entity.isDeleted());
-        verify(field).setValueFromDatabaseToEntity(cursor, entity);
+        verify(field2).setValueFromDatabaseToEntity(cursor, entity);
         verify(cursor).close();
     }
 
@@ -387,7 +397,7 @@ public class MobeelizerModelDefinitionImplTest {
         // then
         assertNotNull(entity);
         assertEquals("guid", entity.getGuid());
-        verify(field).setValueFromDatabaseToEntity(cursor, entity);
+        verify(field2).setValueFromDatabaseToEntity(cursor, entity);
         verify(cursor).close();
     }
 
@@ -419,7 +429,7 @@ public class MobeelizerModelDefinitionImplTest {
         assertEquals("modelName", entity.getModel());
         assertTrue(entity.isDeleted());
         assertSame(map, entity.getFields());
-        verify(field).setValueFromDatabaseToMap(cursor, map);
+        verify(field2).setValueFromDatabaseToMap(cursor, map);
     }
 
     @Test
@@ -450,7 +460,7 @@ public class MobeelizerModelDefinitionImplTest {
         assertEquals("simpleModelName", entity.getModel());
         assertTrue(entity.isDeleted());
         assertSame(map, entity.getFields());
-        verify(field).setValueFromDatabaseToMap(cursor, map);
+        verify(field2).setValueFromDatabaseToMap(cursor, map);
     }
 
     @Test
@@ -530,11 +540,11 @@ public class MobeelizerModelDefinitionImplTest {
         assertEquals("guid1", entities.get(0).getGuid());
         assertEquals("owner1", entities.get(0).getOwner());
         assertTrue(entities.get(0).isConflicted());
-        verify(field).setValueFromDatabaseToEntity(cursor, entities.get(0));
+        verify(field2).setValueFromDatabaseToEntity(cursor, entities.get(0));
         assertEquals("guid2", entities.get(1).getGuid());
         assertEquals("owner2", entities.get(1).getOwner());
         assertFalse(entities.get(1).isConflicted());
-        verify(field).setValueFromDatabaseToEntity(cursor, entities.get(1));
+        verify(field2).setValueFromDatabaseToEntity(cursor, entities.get(1));
         verify(cursor).close();
     }
 
@@ -567,7 +577,7 @@ public class MobeelizerModelDefinitionImplTest {
         sql.append("field1_definition, ");
         sql.append("field2_definition);");
 
-        when(field.getDefinition()).thenReturn(new String[] { "field1_definition", "field2_definition" });
+        when(field2.getDefinition()).thenReturn(new String[] { "field1_definition", "field2_definition" });
 
         // when
         definition.onCreate(database);
@@ -589,7 +599,7 @@ public class MobeelizerModelDefinitionImplTest {
         sql.append("field1_definition, ");
         sql.append("field2_definition);");
 
-        when(field.getDefinition()).thenReturn(new String[] { "field1_definition", "field2_definition" });
+        when(field2.getDefinition()).thenReturn(new String[] { "field1_definition", "field2_definition" });
 
         // when
         definition.onUpgrade(database);
@@ -713,8 +723,8 @@ public class MobeelizerModelDefinitionImplTest {
         whenGetByGuidWithDeleted("testentity", "guid").thenReturn(cursor);
         when(cursor.moveToNext()).thenReturn(false);
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
-        PowerMockito.whenNew(MobeelizerErrorsImpl.class).withNoArguments().thenReturn(errors);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        PowerMockito.whenNew(MobeelizerErrorsHolder.class).withNoArguments().thenReturn(errors);
         when(errors.isValid()).thenReturn(false);
 
         // when
@@ -744,7 +754,7 @@ public class MobeelizerModelDefinitionImplTest {
         when(cursor.getColumnIndex("_modified")).thenReturn(12);
         when(cursor.getInt(12)).thenReturn(2);
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         // when
         boolean isTransactionSuccessful = definition.updateEntityFromSync(database, entity);
@@ -756,7 +766,7 @@ public class MobeelizerModelDefinitionImplTest {
         verify(values, never()).put("_guid", "guid");
         verify(values).put(eq("_deleted"), anyInt());
         verify(values, never()).put("_owner", "owner");
-        verify(field, never()).setValueFromMapToDatabase(values, fields, errors);
+        verify(field2, never()).setValueFromMapToDatabase(values, fields, errors);
         verify(database).update(eq("testentity"), eq(values), eq("_guid = ?"), eq(new String[] { "guid" }));
         verify(database, never()).insert(eq("testentity"), eq((String) null), any(ContentValues.class));
         assertTrue(isTransactionSuccessful);
@@ -779,8 +789,8 @@ public class MobeelizerModelDefinitionImplTest {
         when(cursor.getColumnIndex("_modified")).thenReturn(12);
         when(cursor.getInt(12)).thenReturn(2);
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
-        PowerMockito.whenNew(MobeelizerErrorsImpl.class).withNoArguments().thenReturn(errors);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        PowerMockito.whenNew(MobeelizerErrorsHolder.class).withNoArguments().thenReturn(errors);
         when(errors.isValid()).thenReturn(true);
 
         // when
@@ -793,7 +803,7 @@ public class MobeelizerModelDefinitionImplTest {
         verify(values).put("_modified", 0);
         verify(values, times(2)).put("_deleted", 1);
         verify(values).put("_owner", "owner");
-        verify(field).setValueFromMapToDatabase(values, fields, errors);
+        verify(field2).setValueFromMapToDatabase(values, fields, errors);
         verify(database).update(eq("testentity"), eq(values), eq("_guid = ?"), eq(new String[] { "guid" }));
         verify(database, never()).insert(eq("testentity"), eq((String) null), any(ContentValues.class));
         assertTrue(isTransactionSuccessful);
@@ -814,8 +824,8 @@ public class MobeelizerModelDefinitionImplTest {
         whenGetByGuidWithDeleted("testentity", "guid").thenReturn(cursor);
         when(cursor.moveToNext()).thenReturn(false);
 
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
-        PowerMockito.whenNew(MobeelizerErrorsImpl.class).withNoArguments().thenReturn(errors);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        PowerMockito.whenNew(MobeelizerErrorsHolder.class).withNoArguments().thenReturn(errors);
         when(errors.isValid()).thenReturn(true);
 
         // when
@@ -828,7 +838,7 @@ public class MobeelizerModelDefinitionImplTest {
         verify(values).put("_modified", 0);
         verify(values).put("_deleted", 0);
         verify(values).put("_guid", "guid");
-        verify(field).setValueFromMapToDatabase(values, fields, errors);
+        verify(field2).setValueFromMapToDatabase(values, fields, errors);
         verify(database, never()).update(eq("testentity"), any(ContentValues.class), any(String.class), any(String[].class));
         verify(database).insert(eq("testentity"), eq((String) null), eq(values));
         assertTrue(isTransactionSuccessful);

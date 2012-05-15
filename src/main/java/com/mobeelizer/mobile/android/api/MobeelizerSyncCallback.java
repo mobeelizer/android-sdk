@@ -22,6 +22,7 @@ package com.mobeelizer.mobile.android.api;
 
 import com.mobeelizer.mobile.android.Mobeelizer;
 
+
 /**
  * Callback used to notify when the async synchronization is finished.
  * 

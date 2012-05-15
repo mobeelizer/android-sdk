@@ -20,70 +20,115 @@
 
 package com.mobeelizer.mobile.android;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.conn.params.ConnRouteParams;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Proxy;
-import android.util.Config;
 import android.util.Log;
 
+import com.mobeelizer.java.api.MobeelizerMode;
+import com.mobeelizer.java.connection.MobeelizerAuthenticateResponse;
+import com.mobeelizer.java.connection.MobeelizerConnectionService;
+import com.mobeelizer.java.connection.MobeelizerConnectionServiceDelegate;
+import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 
 class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
-    private static final String STATUS_ERROR = "ERROR";
-
-    private static final String STATUS_OK = "OK";
-
-    private static final String MESSAGE = "message";
-
-    private static final String CONTENT = "content";
-
-    private static final String STATUS = "status";
-
     private static final String TAG = "mobeelizer:mobeelizerrealconnectionmanager";
+
+    private MobeelizerConnectionService connectionService;
 
     private final MobeelizerApplication application;
 
     public MobeelizerRealConnectionManager(final MobeelizerApplication application) {
         this.application = application;
+        this.connectionService = new MobeelizerConnectionServiceImpl(new MobeelizerConnectionServiceDelegate() {
+
+            @Override
+            public void setProxyIfNecessary(final HttpRequestBase request) {
+                MobeelizerRealConnectionManager.this.setProxyIfNecessary(request);
+            }
+
+            @Override
+            public void logInfo(final String message) {
+                Log.i(TAG, message);
+            }
+
+            @Override
+            public void logDebug(final String message) {
+                Log.d(TAG, message);
+            }
+
+            @Override
+            public boolean isNetworkAvailable() {
+                return MobeelizerRealConnectionManager.this.isNetworkAvailable();
+            }
+
+            @Override
+            public String getVersionDigest() {
+                return application.getVersionDigest();
+            }
+
+            @Override
+            public String getVendor() {
+                return application.getVendor();
+            }
+
+            @Override
+            public String getUser() {
+                return application.getUser();
+            }
+
+            @Override
+            public String getUrl() {
+                return application.getUrl();
+            }
+
+            @Override
+            public String getSdkVersion() {
+                return "android-sdk-" + Mobeelizer.VERSION;
+            }
+
+            @Override
+            public String getPassword() {
+                return application.getPassword();
+            }
+
+            @Override
+            public String getInstance() {
+                return application.getInstance();
+            }
+
+            @Override
+            public String getDeviceIdentifier() {
+                return application.getDeviceIdentifier();
+            }
+
+            @Override
+            public String getDevice() {
+                return application.getDevice();
+            }
+
+            @Override
+            public String getApplication() {
+                return application.getApplication();
+            }
+
+            @Override
+            public MobeelizerMode getMode() {
+                return application.getMode();
+            }
+
+        });
     }
 
     @Override
@@ -103,67 +148,111 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
             }
         }
 
+        MobeelizerAuthenticateResponse response = null;
+
         try {
-            String response;
-
-            try {
-                response = executeGetAndGetString("/authenticate", new String[0]);
-            } catch (ConnectionException e) {
-                String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
-
-                if (roleAndInstanceGuid[0] == null) {
-                    return new MobeelizerLoginResponse(MobeelizerLoginStatus.CONNECTION_FAILURE);
-                } else {
-                    return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, roleAndInstanceGuid[1], roleAndInstanceGuid[0],
-                            false);
-                }
-            }
-
-            JSONObject json = new JSONObject(response);
-
-            if (STATUS_OK.equals(json.getString(STATUS))) {
-                String role = json.getJSONObject(CONTENT).getString("role");
-                String instanceGuid = json.getJSONObject(CONTENT).getString("instanceGuid");
-
-                boolean initialSyncRequired = isInitialSyncRequired(application, instanceGuid);
-
-                setRoleAndInstanceGuidInDatabase(application, role, instanceGuid);
-                Log.i(TAG, "Login '" + application.getUser() + "' successful.");
-                return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, instanceGuid, role, initialSyncRequired);
-            } else if (STATUS_ERROR.equals(json.getString(STATUS))
-                    && "authenticationFailure".equals(json.getJSONObject(CONTENT).getString("messageCode"))) {
-                Log.e(TAG, "Login failure. Authentication error: " + response);
-                clearRoleAndInstanceGuidInDatabase(application);
-                return new MobeelizerLoginResponse(MobeelizerLoginStatus.AUTHENTICATION_FAILURE);
+            if (application.getRemoteNotificationToken() != null) {
+                response = connectionService.authenticate(application.getUser(), application.getPassword(),
+                        application.getRemoteNotificationToken());
             } else {
-                clearRoleAndInstanceGuidInDatabase(application);
-                Log.e(TAG, "Login failure. Invalid response: " + response);
-                return new MobeelizerLoginResponse(MobeelizerLoginStatus.OTHER_FAILURE);
+                response = connectionService.authenticate(application.getUser(), application.getPassword());
             }
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage(), e);
-            return new MobeelizerLoginResponse(MobeelizerLoginStatus.OTHER_FAILURE);
+        } catch (IOException e) {
+            String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
+
+            if (roleAndInstanceGuid[0] == null) {
+                return new MobeelizerLoginResponse(MobeelizerLoginStatus.CONNECTION_FAILURE);
+            } else {
+                return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, roleAndInstanceGuid[1], roleAndInstanceGuid[0],
+                        false);
+            }
+        }
+
+        if (response != null) {
+            boolean initialSyncRequired = isInitialSyncRequired(application, response.getInstanceGuid());
+
+            setRoleAndInstanceGuidInDatabase(application, response.getRole(), response.getInstanceGuid());
+            Log.i(TAG, "Login '" + application.getUser() + "' successful.");
+            return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, response.getInstanceGuid(), response.getRole(),
+                    initialSyncRequired);
+        } else {
+            Log.e(TAG, "Login failure. Authentication error.");
+            clearRoleAndInstanceGuidInDatabase(application);
+            return new MobeelizerLoginResponse(MobeelizerLoginStatus.AUTHENTICATION_FAILURE);
         }
     }
 
-    private boolean isInitialSyncRequired(final MobeelizerApplication application, final String instanceGuid) {
-        return application.getInternalDatabase().isInitialSyncRequired(application.getInstance(), instanceGuid,
-                application.getUser());
+    @Override
+    public String sendSyncAllRequest() throws ConnectionException {
+        try {
+            return connectionService.sendSyncAllRequest();
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
     }
 
-    private String[] getRoleAndInstanceGuidFromDatabase(final MobeelizerApplication application) {
-        return application.getInternalDatabase().getRoleAndInstanceGuid(application.getInstance(), application.getUser(),
-                application.getPassword());
+    @Override
+    public String sendSyncDiffRequest(final File outputFile) throws ConnectionException {
+        try {
+            return connectionService.sendSyncDiffRequest(outputFile);
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
     }
 
-    private void setRoleAndInstanceGuidInDatabase(final MobeelizerApplication application, final String role,
-            final String instanceGuid) {
-        application.getInternalDatabase().setRoleAndInstanceGuid(application.getInstance(), application.getUser(),
-                application.getPassword(), role, instanceGuid);
+    @Override
+    public boolean waitUntilSyncRequestComplete(final String ticket) throws ConnectionException {
+        try {
+            return connectionService.waitUntilSyncRequestComplete(ticket);
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
     }
 
-    private void clearRoleAndInstanceGuidInDatabase(final MobeelizerApplication application) {
-        application.getInternalDatabase().clearRoleAndInstanceGuid(application.getInstance(), application.getUser());
+    @Override
+    public File getSyncData(final String ticket) throws ConnectionException {
+        try {
+            return connectionService.getSyncData(ticket);
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void confirmTask(final String ticket) throws ConnectionException {
+        try {
+            connectionService.confirmTask(ticket);
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void registerForRemoteNotifications(final String token) throws ConnectionException {
+        try {
+            connectionService.registerForRemoteNotifications(token);
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void unregisterForRemoteNotifications(final String token) throws ConnectionException {
+        try {
+            connectionService.unregisterForRemoteNotifications(token);
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification) throws ConnectionException {
+        try {
+            connectionService.sendRemoteNotification(device, group, users, notification);
+        } catch (IOException e) {
+            throw new ConnectionException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -194,6 +283,26 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         return false;
     }
 
+    private boolean isInitialSyncRequired(final MobeelizerApplication application, final String instanceGuid) {
+        return application.getInternalDatabase().isInitialSyncRequired(application.getInstance(), instanceGuid,
+                application.getUser());
+    }
+
+    private String[] getRoleAndInstanceGuidFromDatabase(final MobeelizerApplication application) {
+        return application.getInternalDatabase().getRoleAndInstanceGuid(application.getInstance(), application.getUser(),
+                application.getPassword());
+    }
+
+    private void setRoleAndInstanceGuidInDatabase(final MobeelizerApplication application, final String role,
+            final String instanceGuid) {
+        application.getInternalDatabase().setRoleAndInstanceGuid(application.getInstance(), application.getUser(),
+                application.getPassword(), role, instanceGuid);
+    }
+
+    private void clearRoleAndInstanceGuidInDatabase(final MobeelizerApplication application) {
+        application.getInternalDatabase().clearRoleAndInstanceGuid(application.getInstance(), application.getUser());
+    }
+
     private boolean isConnecting(final ConnectivityManager connectivityManager) {
         return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting()
                 || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
@@ -202,294 +311,6 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
     private boolean isConnected(final ConnectivityManager connectivityManager) {
         return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()
                 || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected();
-    }
-
-    @Override
-    public String sendSyncAllRequest() throws ConnectionException {
-        try {
-            String response = executePostAndGetString("/synchronizeAll",
-                    new String[] { "version", application.getVersionDigest() }, new Object[0]);
-
-            JSONObject json = new JSONObject(response);
-
-            if (STATUS_OK.equals(json.getString(STATUS))) {
-                return json.getString(CONTENT);
-            } else if (STATUS_ERROR.equals(json.getString(STATUS))) {
-                throw new ConnectionException("Sync failure with message: " + json.getJSONObject(CONTENT).getString(MESSAGE));
-            } else {
-                throw new ConnectionException("Sync failure: " + json.getString(CONTENT));
-            }
-        } catch (JSONException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public String sendSyncDiffRequest(final File outputFile) throws ConnectionException {
-        try {
-            String response = executePostAndGetString("/synchronize", new String[0], new Object[] { "file", outputFile });
-
-            JSONObject json = new JSONObject(response);
-
-            if (STATUS_OK.equals(json.getString(STATUS))) {
-                return json.getString(CONTENT);
-            } else if (STATUS_ERROR.equals(json.getString(STATUS))) {
-                throw new ConnectionException("Sync failure with message: " + json.getJSONObject(CONTENT).getString(MESSAGE));
-            } else {
-                throw new ConnectionException("Sync failure: " + json.getString(CONTENT));
-            }
-        } catch (JSONException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public boolean waitUntilSyncRequestComplete(final String ticket) throws ConnectionException {
-        try {
-            for (int i = 0; i < 100; i++) {
-                String response = executeGetAndGetString("/checkStatus", new String[] { "ticket", ticket });
-
-                JSONObject json = new JSONObject(response);
-
-                if (STATUS_OK.equals(json.getString(STATUS))) {
-                    String status = json.getJSONObject(CONTENT).getString(STATUS);
-
-                    Log.i(TAG, "Check task status: " + status);
-
-                    if ("REJECTED".toString().equals(status)) {
-                        Log.i(TAG, "Check task status success: " + status + " with result "
-                                + json.getJSONObject(CONTENT).getString("result") + " and message '"
-                                + json.getJSONObject(CONTENT).getString(MESSAGE) + "'");
-                        return false;
-                    } else if ("FINISHED".toString().equals(status)) {
-                        return true;
-                    }
-                } else if (STATUS_ERROR.equals(json.getString(STATUS))) {
-                    throw new ConnectionException("Check task status failure: " + json.getJSONObject(CONTENT).getString(MESSAGE));
-                } else {
-                    throw new ConnectionException("Check task status failure: " + json.getString(CONTENT));
-                }
-
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new ConnectionException(e.getMessage(), e);
-                }
-            }
-        } catch (JSONException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
-
-        return false;
-
-    }
-
-    @Override
-    public File getSyncData(final String ticket) throws ConnectionException {
-        return executeGetAndGetFile("/data", new String[] { "ticket", ticket });
-    }
-
-    @Override
-    public void confirmTask(final String ticket) throws ConnectionException {
-        executePostAndGetString("/confirm", new String[] { "ticket", ticket }, new Object[0]);
-    }
-
-    private String executeGetAndGetString(final String path, final String[] params) throws ConnectionException {
-        HttpGet request = new HttpGet(application.getUrl() + path + createQuery(params));
-        setHeaders(request, true);
-        return executeAndGetString(request);
-    }
-
-    private File executeGetAndGetFile(final String path, final String[] params) throws ConnectionException {
-        HttpGet request = new HttpGet(application.getUrl() + path + createQuery(params));
-        setHeaders(request, true);
-        return executeAndGetFile(request);
-    }
-
-    private String executePostAndGetString(final String path, final String[] params, final Object[] files)
-            throws ConnectionException {
-        HttpPost request = null;
-
-        if (files.length > 0) {
-            request = new HttpPost(application.getUrl() + path);
-
-            try {
-                // TODO V3 is it possible to make it without httpmime library?
-                MultipartEntity entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-                for (int i = 0; i < files.length; i += 2) {
-                    entity.addPart((String) files[0],
-                            new InputStreamBody(new FileInputStream((File) files[1]), (String) files[0]));
-                }
-                for (int i = 0; i < params.length; i += 2) {
-                    entity.addPart(params[i], new StringBody(params[i + 1]));
-                }
-                request.setEntity(entity);
-            } catch (IOException e) {
-                throw new ConnectionException(e.getMessage(), e);
-            }
-
-            setHeaders(request, false);
-        } else {
-            request = new HttpPost(application.getUrl() + path + createQuery(params));
-            setHeaders(request, true);
-        }
-
-        return executeAndGetString(request);
-    }
-
-    private void setHeaders(final HttpRequestBase request, final boolean setJsonContentType) {
-        if (setJsonContentType) {
-            request.setHeader("content-type", "application/json");
-        }
-        request.setHeader("mas-vendor-name", application.getVendor());
-        request.setHeader("mas-application-name", application.getApplication());
-        request.setHeader("mas-application-instance-name", application.getInstance());
-        request.setHeader("mas-definition-digest", application.getVersionDigest());
-        request.setHeader("mas-device-name", application.getDevice());
-        request.setHeader("mas-device-identifier", application.getDeviceIdentifier());
-        request.setHeader("mas-user-name", application.getUser());
-        request.setHeader("mas-user-password", application.getPassword());
-        request.setHeader("mas-sdk-version", "android-sdk-" + Mobeelizer.VERSION);
-    }
-
-    private String createQuery(final String... params) {
-        if (params.length > 0) {
-            List<NameValuePair> qparams = new ArrayList<NameValuePair>();
-            for (int i = 0; i < params.length; i += 2) {
-                qparams.add(new BasicNameValuePair(params[i], params[i + 1]));
-            }
-            return "?" + URLEncodedUtils.format(qparams, "UTF-8");
-        } else {
-            return "";
-        }
-    }
-
-    private String executeAndGetString(final HttpRequestBase request) throws ConnectionException {
-        HttpClient client = getHttpClient();
-
-        InputStream is = null;
-        Reader reader = null;
-
-        if (!isNetworkAvailable()) {
-            throw new ConnectionException("Cannot execute HTTP request, network connection not available");
-        }
-
-        setProxyIfNecessary(request);
-
-        try {
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    throw new ConnectionException("Connection failure: entity not found.");
-                }
-
-                is = entity.getContent();
-
-                Writer writer = new StringWriter();
-
-                char[] buffer = new char[1024];
-
-                reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                int n;
-                while ((n = reader.read(buffer)) != -1) {
-                    writer.write(buffer, 0, n);
-                }
-
-                return writer.toString();
-            } else {
-                throw new ConnectionException("Connection failure: " + response.getStatusLine().getStatusCode() + ".");
-            }
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    if (Config.LOGD) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-                }
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    if (Config.LOGD) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-                }
-            }
-            client.getConnectionManager().shutdown();
-        }
-    }
-
-    private File executeAndGetFile(final HttpRequestBase request) throws ConnectionException {
-        HttpClient client = getHttpClient();
-
-        BufferedInputStream in = null;
-        BufferedOutputStream out = null;
-
-        if (!isNetworkAvailable()) {
-            throw new ConnectionException("Cannot execute HTTP request, network connection not available");
-        }
-
-        setProxyIfNecessary(request);
-
-        try {
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                HttpEntity entity = response.getEntity();
-
-                if (entity == null) {
-                    throw new ConnectionException("Connection failure: entity not found.");
-                }
-
-                in = new BufferedInputStream(entity.getContent());
-
-                File file = File
-                        .createTempFile("sync", "response", application.getContext().getDir("sync", Context.MODE_PRIVATE));
-
-                out = new BufferedOutputStream(new FileOutputStream(file));
-
-                byte[] buffer = new byte[4096];
-                int n = -1;
-
-                while ((n = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, n);
-                }
-
-                return file;
-            } else {
-                throw new ConnectionException("Connection failure: " + response.getStatusLine().getStatusCode() + ".");
-            }
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    if (Config.LOGD) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-                }
-            }
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    if (Config.LOGD) {
-                        Log.d(TAG, e.getMessage(), e);
-                    }
-                }
-            }
-            client.getConnectionManager().shutdown();
-        }
     }
 
     private void setProxyIfNecessary(final HttpRequestBase request) {
@@ -519,13 +340,6 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
             super(message, throwable);
         }
 
-    }
-
-    private HttpClient getHttpClient() {
-        HttpParams parameters = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(parameters, 10000);
-        HttpClient client = new DefaultHttpClient(parameters);
-        return client;
     }
 
 }

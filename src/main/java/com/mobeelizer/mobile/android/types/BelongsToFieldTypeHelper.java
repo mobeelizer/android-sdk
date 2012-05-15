@@ -20,7 +20,7 @@
 
 package com.mobeelizer.mobile.android.types;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.setValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -28,27 +28,34 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.mobile.android.Mobeelizer;
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerErrors;
 
 public class BelongsToFieldTypeHelper extends FieldTypeHelper {
 
     public BelongsToFieldTypeHelper() {
-        super(String.class); // TODO V3 auto proxy on belongsTo fields - Object.class
+        super(MobeelizerFieldType.BELONGS_TO);
     }
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value, final Field field,
-            final Map<String, String> options, final MobeelizerErrorsImpl errors) {
-        Class<?> clazz = Mobeelizer.getDatabase().getModel(options.get("model")).getMappingClass();
+            final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+        String stringValue = (String) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
 
-        if (!Mobeelizer.getDatabase().exists(clazz, (String) value)) {
-            errors.addFieldMissingReferenceError(field.getName(), (String) value);
+        if (!errors.isValid()) {
             return;
         }
 
-        values.put(field.getName(), (String) value);
+        Class<?> clazz = Mobeelizer.getDatabase().getModel(options.get("model")).getMappingClass();
+
+        if (!Mobeelizer.getDatabase().exists(clazz, stringValue)) {
+            errors.addFieldMissingReferenceError(field.getName(), stringValue);
+            return;
+        }
+
+        values.put(field.getName(), stringValue);
     }
 
     @Override
@@ -60,7 +67,7 @@ public class BelongsToFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected <T> void setNotNullValueFromDatabaseToEntity(final Cursor cursor, final int columnIndex, final T entity,
             final Field field, final Map<String, String> options) {
-        setValue(field, entity, cursor.getString(columnIndex));
+        setValue(field, entity, getType().convertFromDatabaseValueToEntityValue(field, cursor.getString(columnIndex)));
     }
 
     @Override
@@ -68,11 +75,6 @@ public class BelongsToFieldTypeHelper extends FieldTypeHelper {
             final Map<String, String> options) {
         return new String[] { getSingleDefinition(field.getName(), "TEXT(36)", required, null, false) + " REFERENCES "
                 + options.get("model") + "(guid)" };
-    }
-
-    @Override
-    protected Object convertTypeDefaultValue(final Field field, final String defaultValue, final Map<String, String> options) {
-        return null;
     }
 
     @Override

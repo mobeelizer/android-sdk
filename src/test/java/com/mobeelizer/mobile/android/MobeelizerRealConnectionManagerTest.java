@@ -54,11 +54,12 @@ import android.net.NetworkInfo;
 import android.net.Proxy;
 import android.util.Log;
 
+import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerRealConnectionManager.class, Log.class, DefaultHttpClient.class, HttpGet.class, HttpPost.class,
-        Proxy.class })
+        Proxy.class, MobeelizerConnectionServiceImpl.class })
 public class MobeelizerRealConnectionManagerTest {
 
     private MobeelizerRealConnectionManager connectionManager;
@@ -181,7 +182,7 @@ public class MobeelizerRealConnectionManagerTest {
         // given
         when(httpEntity.getContent()).thenReturn(
                 new ByteArrayInputStream(
-                        "{'content':{'message':'XXX','arguments':null,'messageCode':'authenticationFailure'},'status':'ERROR'}"
+                        "{'content':{'message':'Authentication failure','arguments':null,'messageCode':'authenticationFailure'},'status':'ERROR'}"
                                 .replaceAll("'", "\"").getBytes()));
 
         // when
@@ -201,15 +202,15 @@ public class MobeelizerRealConnectionManagerTest {
                 new ByteArrayInputStream(
                         "{'content':{'message':'XXX','arguments':null,'messageCode':'vendorNotFound'},'status':'ERROR'}"
                                 .replaceAll("'", "\"").getBytes()));
+        when(database.getRoleAndInstanceGuid("instance", "user", "password")).thenReturn(new String[2]);
 
         // when
         MobeelizerLoginResponse response = connectionManager.login();
 
         // then
-        verify(database).clearRoleAndInstanceGuid("instance", "user");
-
         assertNull(response.getRole());
-        assertEquals(MobeelizerLoginStatus.OTHER_FAILURE, response.getStatus());
+        assertNull(response.getInstanceGuid());
+        assertEquals(MobeelizerLoginStatus.CONNECTION_FAILURE, response.getStatus());
     }
 
     @Test

@@ -49,12 +49,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerReflectionUtil;
 import com.mobeelizer.mobile.android.Mobeelizer;
 import com.mobeelizer.mobile.android.MobeelizerDatabaseImpl;
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
 import com.mobeelizer.mobile.android.TestEntity;
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
-import com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ BelongsToFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class, Mobeelizer.class })
@@ -88,7 +88,7 @@ public class BelongsToFieldTypeHelperTest {
     @Test
     public void shouldGetAccessibleTypes() throws Exception {
         // when
-        Set<Class<?>> types = FieldType.BELONGS_TO.getAccessibleTypes();
+        Set<Class<?>> types = FieldType.BELONGS_TO.getType().getAccessibleTypes();
 
         // then
         assertEquals(1, types.size());
@@ -103,11 +103,12 @@ public class BelongsToFieldTypeHelperTest {
         options.put("model", "modelName");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        when(errors.isValid()).thenReturn(true);
 
         String uuid = UUID.randomUUID().toString();
 
-        MobeelizerModelDefinitionImpl modelDefinition = mock(MobeelizerModelDefinitionImpl.class);
+        MobeelizerAndroidModel modelDefinition = mock(MobeelizerAndroidModel.class);
         Class clazz = TmpClass.class;
         when(modelDefinition.getMappingClass()).thenReturn(clazz);
         when(database.getModel("modelName")).thenReturn(modelDefinition);
@@ -134,11 +135,12 @@ public class BelongsToFieldTypeHelperTest {
         options.put("model", "modelName");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        when(errors.isValid()).thenReturn(true);
 
         String uuid = UUID.randomUUID().toString();
 
-        MobeelizerModelDefinitionImpl modelDefinition = mock(MobeelizerModelDefinitionImpl.class);
+        MobeelizerAndroidModel modelDefinition = mock(MobeelizerAndroidModel.class);
         Class clazz = TmpClass.class;
         when(modelDefinition.getMappingClass()).thenReturn(clazz);
         when(database.getModel("modelName")).thenReturn(modelDefinition);
@@ -161,7 +163,7 @@ public class BelongsToFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -245,7 +247,7 @@ public class BelongsToFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.BELONGS_TO.convertDefaultValue(fieldString, null, options);
+        Object defaultValue = FieldType.BELONGS_TO.getType().convertDefaultValue(fieldString, null, options);
 
         // then
         assertNull(defaultValue);
@@ -256,7 +258,7 @@ public class BelongsToFieldTypeHelperTest {
         // when
         Map<String, String> options = new HashMap<String, String>();
 
-        Object defaultValue = FieldType.BELONGS_TO.convertDefaultValue(fieldString, "xxx", options);
+        Object defaultValue = FieldType.BELONGS_TO.getType().convertDefaultValue(fieldString, "xxx", options);
 
         // then
         assertNull(defaultValue);
@@ -267,7 +269,7 @@ public class BelongsToFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -323,7 +325,7 @@ public class BelongsToFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -339,7 +341,7 @@ public class BelongsToFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         String uuid = UUID.randomUUID().toString();
 

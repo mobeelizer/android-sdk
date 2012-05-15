@@ -26,9 +26,9 @@ import com.mobeelizer.mobile.android.Mobeelizer;
  * The status of current sync.
  * 
  * @see Mobeelizer#sync()
- * @see Mobeelizer#syncAndWait()
+ * @see Mobeelizer#sync(MobeelizerSyncCallback)
  * @see Mobeelizer#syncAll()
- * @see Mobeelizer#syncAllAndWait()
+ * @see Mobeelizer#syncAll(MobeelizerSyncCallback)
  * @since 1.0
  */
 public enum MobeelizerSyncStatus {

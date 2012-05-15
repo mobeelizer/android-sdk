@@ -33,6 +33,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.mobeelizer.java.model.MobeelizerReflectionUtil;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
