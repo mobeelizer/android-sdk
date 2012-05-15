@@ -369,7 +369,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public MobeelizerCommunicationStatus sendRemoteNotificationToDevice(final Map<String, String> notification,
+    public static MobeelizerCommunicationStatus sendRemoteNotificationToDevice(final Map<String, String> notification,
             final String device) {
         return getInstance().sendRemoteNotification(device, null, null, notification);
     }
