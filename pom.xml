@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>com.mobeelizer</groupId>
 			<artifactId>java-common</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.1.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.httpcomponents</groupId>
@@ -197,60 +197,64 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<configuration>
+					<target>
+						<taskdef name="s3upload" classname="dak.ant.taskdefs.S3Upload"
+							classpathref="maven.plugin.classpath" />
+						<copy
+							file="${basedir}/target/${project.artifactId}-${releaseVersion}.jar"
+							tofile="${basedir}/target/mobeelizer-android-sdk.jar" />
+						<copy
+							file="${basedir}/target/${project.artifactId}-${releaseVersion}-javadoc.jar"
+							tofile="${basedir}/target/mobeelizer-android-sdk-javadoc.jar" />
+						<s3upload verbose="true" accessId="${accessId}"
+							secretKey="${secretKey}" bucket="sdk.mobeelizer.com"
+							publicRead="true">
+							<fileset dir="${basedir}/target/" includes="mobeelizer-*.jar" />
+						</s3upload>
+						<s3upload verbose="true" accessId="${accessId}"
+							secretKey="${secretKey}" bucket="sdk.mobeelizer.com"
+							publicRead="true" prefix="android/">
+							<fileset dir="${basedir}/target/apidocs/" includes="**/*" />
+						</s3upload>
+					</target>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>thirdparty</groupId>
+						<artifactId>awstasks</artifactId>
+						<version>0.3</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+			    <groupId>com.jakewharton</groupId>
+			    <artifactId>github-deploy-maven-plugin</artifactId>
+			    <version>1.0.2</version>
+			    <configuration>
+			        <replaceExisting>true</replaceExisting>
+			        <replaceExisting>true</replaceExisting>
+			        <ignoreTypes>
+			            <ignoreType>java-source</ignoreType>
+			            <ignoreType>javadoc</ignoreType>
+			        </ignoreTypes>
+			    </configuration>
+			</plugin>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<goals>deploy antrun:run github-deploy:deploy</goals>
+					<arguments>-DreleaseVersion=${releaseVersion} -DaccessId=${accessId} -DsecretKey=${secretKey}</arguments>
+				</configuration>			    
+			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>deploy-to-amazon</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>1.7</version>
-						<configuration>
-							<target>
-								<taskdef name="s3upload" classname="dak.ant.taskdefs.S3Upload"
-									classpathref="maven.plugin.classpath" />
-								<copy
-									file="${basedir}/target/${project.artifactId}-${project.version}.jar"
-									tofile="${basedir}/target/mobeelizer-android-sdk.jar" />
-								<copy
-									file="${basedir}/target/${project.artifactId}-${project.version}-javadoc.jar"
-									tofile="${basedir}/target/mobeelizer-android-sdk-javadoc.jar" />
-								<s3upload verbose="true" accessId="${accessId}"
-									secretKey="${secretKey}" bucket="sdk.mobeelizer.com"
-									publicRead="true">
-									<fileset dir="${basedir}/target/" includes="mobeelizer-*.jar" />
-								</s3upload>
-								<s3upload verbose="true" accessId="${accessId}"
-									secretKey="${secretKey}" bucket="sdk.mobeelizer.com"
-									publicRead="true" prefix="android/">
-									<fileset dir="${basedir}/target/apidocs/" includes="**/*" />
-								</s3upload>
-							</target>
-						</configuration>
-						<dependencies>
-							<dependency>
-								<groupId>thirdparty</groupId>
-								<artifactId>awstasks</artifactId>
-								<version>0.3</version>
-							</dependency>
-						</dependencies>
-						<executions>
-							<execution>
-								<phase>install</phase>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 	<pluginRepositories>
 		<pluginRepository>
@@ -301,4 +305,10 @@
 		</snapshotRepository>
 	</distributionManagement>
 
+	<scm>
+	    <connection>scm:git:ssh://github.com/mobeelizer/android-sdk.git</connection>
+        <developerConnection>scm:git:git@github.com:mobeelizer/android-sdk.git</developerConnection>
+        <url>http://github.com/mobeelizer/android-sdk</url>
+  </scm>
+  
 </project>
