@@ -1,5 +1,5 @@
 // 
-// MobeelizerFieldCredentials.java
+// MobeelizerCommunicationStatus.java
 // 
 // Copyright (C) 2012 Mobeelizer Ltd. All Rights Reserved.
 //
@@ -21,34 +21,24 @@
 package com.mobeelizer.mobile.android.api;
 
 /**
- * Credentials for the database model's field and the user role.
+ * The result of communication.
  * 
  * @since 1.0
  */
-public interface MobeelizerFieldCredentials {
+public enum MobeelizerCommunicationStatus {
 
     /**
-     * Credential for read operation.
+     * Communication completed successfully.
      * 
-     * @return credential
      * @since 1.0
      */
-    MobeelizerCredential getReadAllowed();
+    SUCCESS,
 
     /**
-     * Credential for update operation.
+     * Connection error. Look for the explanation in the application logs.
      * 
-     * @return credential
      * @since 1.0
      */
-    MobeelizerCredential getUpdateAllowed();
-
-    /**
-     * Credential for create operation.
-     * 
-     * @return credential
-     * @since 1.0
-     */
-    MobeelizerCredential getCreateAllowed();
+    CONNECTION_FAILURE
 
 }

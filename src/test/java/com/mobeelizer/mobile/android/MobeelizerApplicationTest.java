@@ -22,7 +22,7 @@ package com.mobeelizer.mobile.android;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -39,6 +39,7 @@ import static org.powermock.api.mockito.PowerMockito.verifyNew;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Before;
@@ -57,15 +58,18 @@ import android.os.Environment;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.mobeelizer.java.api.MobeelizerModel;
+import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
+import com.mobeelizer.java.definition.MobeelizerApplicationDefinition;
+import com.mobeelizer.java.definition.MobeelizerDefinitionConverter;
+import com.mobeelizer.java.definition.MobeelizerDefinitionParser;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
-import com.mobeelizer.mobile.android.definition.MobeelizerApplicationDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerDefinitionParser;
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerApplication.class, Bundle.class, AssetManager.class, MobeelizerDefinitionParser.class, Log.class,
-        Environment.class, MobeelizerSyncServicePerformer.class })
+        Environment.class, MobeelizerSyncServicePerformer.class, MobeelizerConnectionServiceImpl.class,
+        MobeelizerDefinitionConverter.class })
 public class MobeelizerApplicationTest {
 
     private MobeelizerApplication application;
@@ -84,9 +88,9 @@ public class MobeelizerApplicationTest {
 
     private MobeelizerDatabaseImpl database;
 
-    private MobeelizerDefinitionManager definitionManager;
+    private MobeelizerDefinitionConverter definitionManager;
 
-    private Set<MobeelizerModelDefinitionImpl> models;
+    private Set<MobeelizerModel> models;
 
     private TelephonyManager telephonyManager;
 
@@ -94,7 +98,6 @@ public class MobeelizerApplicationTest {
 
     private MobeelizerSyncServicePerformer syncPerformer;
 
-    @SuppressWarnings("unchecked")
     @Before
     public void init() throws Exception {
         PowerMockito.mockStatic(Log.class);
@@ -154,11 +157,11 @@ public class MobeelizerApplicationTest {
         PowerMockito.whenNew(MobeelizerRealConnectionManager.class).withArguments(any(MobeelizerApplication.class))
                 .thenReturn(connectionManager);
 
-        definitionManager = mock(MobeelizerDefinitionManager.class);
+        definitionManager = mock(MobeelizerDefinitionConverter.class);
 
-        PowerMockito.whenNew(MobeelizerDefinitionManager.class).withNoArguments().thenReturn(definitionManager);
+        PowerMockito.whenNew(MobeelizerDefinitionConverter.class).withNoArguments().thenReturn(definitionManager);
 
-        models = mock(Set.class);
+        models = new HashSet<MobeelizerModel>();
 
         when(definitionManager.convert(definition, "com.mobeelizer.orm", "role")).thenReturn(models);
 
@@ -260,7 +263,7 @@ public class MobeelizerApplicationTest {
         MobeelizerApplication application = new MobeelizerApplication(mobeelizer);
 
         // then
-        assertNotNull(application.getUrl());
+        assertNull(application.getUrl());
     }
 
     @Test
@@ -273,7 +276,7 @@ public class MobeelizerApplicationTest {
         MobeelizerApplication application = new MobeelizerApplication(mobeelizer);
 
         // then
-        assertNotNull(application.getUrl());
+        assertNull(application.getUrl());
     }
 
     @Test

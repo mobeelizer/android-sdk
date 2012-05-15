@@ -20,14 +20,14 @@
 
 package com.mobeelizer.mobile.android.api;
 
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.getField;
-import static com.mobeelizer.mobile.android.model.MobeelizerReflectionUtil.getValue;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.getField;
+import static com.mobeelizer.java.model.MobeelizerReflectionUtil.getValue;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 import com.mobeelizer.mobile.android.search.MobeelizerBelongsToRestritionImpl;
 import com.mobeelizer.mobile.android.search.MobeelizerBetweenRestritionImpl;
 import com.mobeelizer.mobile.android.search.MobeelizerConjunctionRestritionImpl;
@@ -169,9 +169,9 @@ public final class MobeelizerRestrictions {
      */
     public static MobeelizerCriterion guidEq(final String guid) {
         if (guid == null) {
-            return isNull(MobeelizerModelDefinitionImpl._GUID);
+            return isNull(MobeelizerAndroidModel._GUID);
         }
-        return new MobeelizerOperatorRestritionImpl(MobeelizerModelDefinitionImpl._GUID, "=", guid);
+        return new MobeelizerOperatorRestritionImpl(MobeelizerAndroidModel._GUID, "=", guid);
     }
 
     /**
@@ -184,9 +184,9 @@ public final class MobeelizerRestrictions {
      */
     public static MobeelizerCriterion ownerEq(final String owner) {
         if (owner == null) {
-            return isNull(MobeelizerModelDefinitionImpl._OWNER);
+            return isNull(MobeelizerAndroidModel._OWNER);
         }
-        return new MobeelizerOperatorRestritionImpl(MobeelizerModelDefinitionImpl._OWNER, "=", owner);
+        return new MobeelizerOperatorRestritionImpl(MobeelizerAndroidModel._OWNER, "=", owner);
     }
 
     /**
@@ -199,9 +199,9 @@ public final class MobeelizerRestrictions {
      */
     public static MobeelizerCriterion guidNe(final String guid) {
         if (guid == null) {
-            return isNotNull(MobeelizerModelDefinitionImpl._GUID);
+            return isNotNull(MobeelizerAndroidModel._GUID);
         }
-        return new MobeelizerOperatorRestritionImpl(MobeelizerModelDefinitionImpl._GUID, "!=", guid);
+        return new MobeelizerOperatorRestritionImpl(MobeelizerAndroidModel._GUID, "!=", guid);
     }
 
     /**
@@ -214,9 +214,9 @@ public final class MobeelizerRestrictions {
      */
     public static MobeelizerCriterion ownerNe(final String owner) {
         if (owner == null) {
-            return isNotNull(MobeelizerModelDefinitionImpl._OWNER);
+            return isNotNull(MobeelizerAndroidModel._OWNER);
         }
-        return new MobeelizerOperatorRestritionImpl(MobeelizerModelDefinitionImpl._OWNER, "!=", owner);
+        return new MobeelizerOperatorRestritionImpl(MobeelizerAndroidModel._OWNER, "!=", owner);
     }
 
     /**
@@ -226,7 +226,7 @@ public final class MobeelizerRestrictions {
      * @since 1.0
      */
     public static MobeelizerCriterion isConflicted() {
-        return new MobeelizerOperatorRestritionImpl(MobeelizerModelDefinitionImpl._CONFLICTED, "=", 1);
+        return new MobeelizerOperatorRestritionImpl(MobeelizerAndroidModel._CONFLICTED, "=", 1);
     }
 
     /**
@@ -236,7 +236,7 @@ public final class MobeelizerRestrictions {
      * @since 1.0
      */
     public static MobeelizerCriterion isNotConflicted() {
-        return new MobeelizerOperatorRestritionImpl(MobeelizerModelDefinitionImpl._CONFLICTED, "=", 0);
+        return new MobeelizerOperatorRestritionImpl(MobeelizerAndroidModel._CONFLICTED, "=", 0);
     }
 
     /**

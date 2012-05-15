@@ -34,13 +34,13 @@ import android.util.Log;
 import com.mobeelizer.mobile.android.api.MobeelizerCriteriaBuilder;
 import com.mobeelizer.mobile.android.api.MobeelizerCriterion;
 import com.mobeelizer.mobile.android.api.MobeelizerOrder;
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerCriteriaBuilderImpl<T> implements MobeelizerCriteriaBuilder<T> {
 
     private static final String TAG = "mobeelizer:criteriabuilderimpl";
 
-    private final MobeelizerModelDefinitionImpl model;
+    private final MobeelizerAndroidModel model;
 
     private final SQLiteDatabase database;
 
@@ -54,7 +54,7 @@ public class MobeelizerCriteriaBuilderImpl<T> implements MobeelizerCriteriaBuild
 
     private int maxResults = Integer.MAX_VALUE;
 
-    public MobeelizerCriteriaBuilderImpl(final MobeelizerModelDefinitionImpl model, final SQLiteDatabase database) {
+    public MobeelizerCriteriaBuilderImpl(final MobeelizerAndroidModel model, final SQLiteDatabase database) {
         this.model = model;
         this.database = database;
     }
@@ -68,7 +68,7 @@ public class MobeelizerCriteriaBuilderImpl<T> implements MobeelizerCriteriaBuild
         List<String> columns = new ArrayList<String>();
         List<String> selectionArgs = new ArrayList<String>();
 
-        selectionBuilder.add(MobeelizerModelDefinitionImpl._DELETED + " = 0");
+        selectionBuilder.add(MobeelizerAndroidModel._DELETED + " = 0");
 
         for (MobeelizerCriterion criterion : criterions) {
             selectionBuilder.add(((MobeelizerInternalCriterion) criterion).addToQuery(selectionArgs));

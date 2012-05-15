@@ -26,20 +26,20 @@ import java.util.Iterator;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
-import com.mobeelizer.mobile.android.sync.MobeelizerJsonEntity;
+import com.mobeelizer.java.sync.MobeelizerJsonEntity;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 class MobeelizerSyncIterator implements Iterator<MobeelizerJsonEntity> {
 
-    private final Iterator<MobeelizerModelDefinitionImpl> models;
+    private final Iterator<MobeelizerAndroidModel> models;
 
     private final SQLiteDatabase database;
 
-    private MobeelizerModelDefinitionImpl model;
+    private MobeelizerAndroidModel model;
 
     private Cursor cursor;
 
-    public MobeelizerSyncIterator(final SQLiteDatabase database, final Collection<MobeelizerModelDefinitionImpl> models) {
+    public MobeelizerSyncIterator(final SQLiteDatabase database, final Collection<MobeelizerAndroidModel> models) {
         this.database = database;
         this.models = models.iterator();
     }

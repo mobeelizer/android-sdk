@@ -22,6 +22,7 @@ package com.mobeelizer.mobile.android.api;
 
 import com.mobeelizer.mobile.android.Mobeelizer;
 
+
 /**
  * The result of creation a user session.
  * 

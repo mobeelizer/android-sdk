@@ -21,6 +21,8 @@
 package com.mobeelizer.mobile.android;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 import com.mobeelizer.mobile.android.MobeelizerRealConnectionManager.ConnectionException;
 
@@ -39,5 +41,12 @@ interface MobeelizerConnectionManager {
     File getSyncData(final String ticket) throws ConnectionException;
 
     void confirmTask(final String ticket) throws ConnectionException;
+
+    void registerForRemoteNotifications(final String registrationId) throws ConnectionException;
+
+    void unregisterForRemoteNotifications(final String remoteNotificationToken) throws ConnectionException;
+
+    void sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification) throws ConnectionException;
 
 }

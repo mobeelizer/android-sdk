@@ -1,5 +1,5 @@
 // 
-// MobeelizerDefinitionManagerTest.java
+// MobeelizerDefinitionConverterTest.java
 // 
 // Copyright (C) 2012 Mobeelizer Ltd. All Rights Reserved.
 //
@@ -44,22 +44,24 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.mobeelizer.mobile.android.api.MobeelizerCredential;
-import com.mobeelizer.mobile.android.api.MobeelizerFieldDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerApplicationDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelCredentialsDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelFieldCredentialsDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerModelFieldDefinition;
-import com.mobeelizer.mobile.android.definition.MobeelizerRoleDefinition;
-import com.mobeelizer.mobile.android.model.MobeelizerFieldDefinitionImpl;
-import com.mobeelizer.mobile.android.model.MobeelizerModelDefinitionImpl;
+import com.mobeelizer.java.api.MobeelizerCredential;
+import com.mobeelizer.java.api.MobeelizerField;
+import com.mobeelizer.java.api.MobeelizerModel;
+import com.mobeelizer.java.definition.MobeelizerApplicationDefinition;
+import com.mobeelizer.java.definition.MobeelizerDefinitionConverter;
+import com.mobeelizer.java.definition.MobeelizerModelCredentialsDefinition;
+import com.mobeelizer.java.definition.MobeelizerModelDefinition;
+import com.mobeelizer.java.definition.MobeelizerModelFieldCredentialsDefinition;
+import com.mobeelizer.java.definition.MobeelizerModelFieldDefinition;
+import com.mobeelizer.java.definition.MobeelizerRoleDefinition;
+import com.mobeelizer.java.model.MobeelizerFieldImpl;
+import com.mobeelizer.java.model.MobeelizerModelImpl;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ MobeelizerDefinitionManager.class, Class.class })
+@PrepareForTest({ MobeelizerDefinitionConverter.class, Class.class })
 public class MobeelizerDefinitionManagerTest {
 
-    private MobeelizerDefinitionManager definitionManager;
+    private MobeelizerDefinitionConverter definitionManager;
 
     private MobeelizerApplicationDefinition definition;
 
@@ -69,7 +71,7 @@ public class MobeelizerDefinitionManagerTest {
 
     @Before
     public void init() {
-        definitionManager = PowerMockito.spy(new MobeelizerDefinitionManager());
+        definitionManager = PowerMockito.spy(new MobeelizerDefinitionConverter());
 
         MobeelizerRoleDefinition role = mock(MobeelizerRoleDefinition.class);
         when(role.resolveName()).thenReturn("role");
@@ -78,17 +80,16 @@ public class MobeelizerDefinitionManagerTest {
         when(definition.getModels()).thenReturn(Collections.<MobeelizerModelDefinition> emptySet());
         when(definition.getRoles()).thenReturn(Collections.<MobeelizerRoleDefinition> singleton(role));
 
-        modelHasAccess = PowerMockito.method(MobeelizerDefinitionManager.class, "hasAccess", MobeelizerModelDefinition.class,
+        modelHasAccess = PowerMockito.method(MobeelizerDefinitionConverter.class, "hasAccess", MobeelizerModelDefinition.class,
                 String.class);
-        fieldHasAccess = PowerMockito.method(MobeelizerDefinitionManager.class, "hasAccess",
+        fieldHasAccess = PowerMockito.method(MobeelizerDefinitionConverter.class, "hasAccess",
                 MobeelizerModelFieldDefinition.class, String.class);
     }
 
     @Test
     public void shouldReturnEmptyModels() throws Exception {
         // when
-        Set<MobeelizerModelDefinitionImpl> convert = definitionManager.convert(definition, "com.mobeelizer.mobile.android",
-                "role");
+        Set<MobeelizerModel> convert = definitionManager.convert(definition, "com.mobeelizer.mobile.android", "role");
 
         // then
         assertTrue(convert.isEmpty());
@@ -225,10 +226,10 @@ public class MobeelizerDefinitionManagerTest {
         models.add(model3);
         when(definition.getModels()).thenReturn(models);
 
-        MobeelizerModelDefinitionImpl modelDefinition1 = mock(MobeelizerModelDefinitionImpl.class);
-        MobeelizerModelDefinitionImpl modelDefinition2 = mock(MobeelizerModelDefinitionImpl.class);
-        MobeelizerFieldDefinitionImpl fieldDefinition1 = mock(MobeelizerFieldDefinitionImpl.class);
-        MobeelizerFieldDefinitionImpl fieldDefinition2 = mock(MobeelizerFieldDefinitionImpl.class);
+        MobeelizerModelImpl modelDefinition1 = mock(MobeelizerModelImpl.class);
+        MobeelizerModelImpl modelDefinition2 = mock(MobeelizerModelImpl.class);
+        MobeelizerFieldImpl fieldDefinition1 = mock(MobeelizerFieldImpl.class);
+        MobeelizerFieldImpl fieldDefinition2 = mock(MobeelizerFieldImpl.class);
 
         Class clazz1 = String.class;
         Class clazz2 = Boolean.class;
@@ -238,29 +239,26 @@ public class MobeelizerDefinitionManagerTest {
         PowerMockito.when(Class.forName("com.mobeelizer.mobile.android.Model1")).thenReturn(clazz1);
         PowerMockito.when(Class.forName("com.mobeelizer.mobile.android.ModelName2")).thenReturn(clazz2);
 
-        Set<MobeelizerFieldDefinitionImpl> fieldDefinitions = new HashSet<MobeelizerFieldDefinitionImpl>();
+        Set<MobeelizerFieldImpl> fieldDefinitions = new HashSet<MobeelizerFieldImpl>();
         fieldDefinitions.add(fieldDefinition1);
         fieldDefinitions.add(fieldDefinition2);
 
-        whenNew(MobeelizerFieldDefinitionImpl.class).withArguments(clazz1, field12, fieldCredentials12).thenReturn(
-                fieldDefinition1);
-        whenNew(MobeelizerFieldDefinitionImpl.class).withArguments(clazz1, field13, fieldCredentials13).thenReturn(
-                fieldDefinition2);
+        whenNew(MobeelizerFieldImpl.class).withArguments(clazz1, field12, fieldCredentials12).thenReturn(fieldDefinition1);
+        whenNew(MobeelizerFieldImpl.class).withArguments(clazz1, field13, fieldCredentials13).thenReturn(fieldDefinition2);
 
-        whenNew(MobeelizerModelDefinitionImpl.class).withArguments(eq(clazz1), eq("model1"), eq(modelCredentials1),
-                eq(fieldDefinitions)).thenReturn(modelDefinition1);
-        whenNew(MobeelizerModelDefinitionImpl.class).withArguments(eq(clazz2), eq("modelName2"), eq(modelCredentials2),
-                eq(Collections.<MobeelizerFieldDefinition> emptySet())).thenReturn(modelDefinition2);
+        whenNew(MobeelizerModelImpl.class).withArguments(eq(clazz1), eq("model1"), eq(modelCredentials1), eq(fieldDefinitions))
+                .thenReturn(modelDefinition1);
+        whenNew(MobeelizerModelImpl.class).withArguments(eq(clazz2), eq("modelName2"), eq(modelCredentials2),
+                eq(Collections.<MobeelizerField> emptySet())).thenReturn(modelDefinition2);
 
         // when
-        Set<MobeelizerModelDefinitionImpl> convert = definitionManager.convert(definition, "com.mobeelizer.mobile.android",
-                "role");
+        Set<MobeelizerModel> convert = definitionManager.convert(definition, "com.mobeelizer.mobile.android", "role");
 
         // then
-        PowerMockito.verifyNew(MobeelizerFieldDefinitionImpl.class, Mockito.times(2)).withArguments(any(Class.class),
+        PowerMockito.verifyNew(MobeelizerFieldImpl.class, Mockito.times(2)).withArguments(any(Class.class),
                 any(MobeelizerModelFieldDefinition.class), any(MobeelizerModelFieldCredentialsDefinition.class));
-        PowerMockito.verifyNew(MobeelizerModelDefinitionImpl.class, Mockito.times(2)).withArguments(any(Class.class),
-                any(String.class), any(MobeelizerModelCredentialsDefinition.class), any(Set.class));
+        PowerMockito.verifyNew(MobeelizerModelImpl.class, Mockito.times(2)).withArguments(any(Class.class), any(String.class),
+                any(MobeelizerModelCredentialsDefinition.class), any(Set.class));
         assertEquals(2, convert.size());
         assertTrue(convert.contains(modelDefinition1));
         assertTrue(convert.contains(modelDefinition2));

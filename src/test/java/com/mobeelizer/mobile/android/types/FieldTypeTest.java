@@ -39,21 +39,32 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.mobile.android.MobeelizerErrorsImpl;
+import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.definition.MobeelizerFieldType;
+import com.mobeelizer.java.definition.type.helpers.MobeelizerFieldTypeHelper;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ FieldType.class, ContentValues.class })
+@PrepareForTest({ FieldType.class, MobeelizerFieldType.class, ContentValues.class })
 public class FieldTypeTest {
 
     private FieldTypeHelper helper;
 
+    private MobeelizerFieldTypeHelper helper2;
+
     @Before
     public void init() throws Exception {
+        helper2 = mock(MobeelizerFieldTypeHelper.class);
+        Field helper2Field = MobeelizerFieldType.TEXT.getClass().getDeclaredField("helper");
+        helper2Field.setAccessible(true);
+        helper2Field.set(MobeelizerFieldType.TEXT, helper2);
+
         helper = mock(FieldTypeHelper.class);
         Field helperField = FieldType.TEXT.getClass().getDeclaredField("helper");
         helperField.setAccessible(true);
         helperField.set(FieldType.TEXT, helper);
+
+        when(helper.getType()).thenReturn(MobeelizerFieldType.TEXT);
     }
 
     @Test
@@ -79,10 +90,10 @@ public class FieldTypeTest {
         // given
         Set<Class<?>> expectedTypes = mock(Set.class);
 
-        when(helper.getAccessibleTypes()).thenReturn(expectedTypes);
+        when(helper2.getAccessibleTypes()).thenReturn(expectedTypes);
 
         // when
-        Set<Class<?>> types = FieldType.TEXT.getAccessibleTypes();
+        Set<Class<?>> types = FieldType.TEXT.getType().getAccessibleTypes();
 
         // then
         assertSame(expectedTypes, types);
@@ -112,7 +123,7 @@ public class FieldTypeTest {
         Field field = PowerMockito.mock(Field.class);
         Map<String, String> options = mock(Map.class);
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsImpl errors = mock(MobeelizerErrorsImpl.class);
+        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
 
         // when
         FieldType.TEXT.setValueFromEntityToDatabase(values, entity, field, false, options, errors);
@@ -129,10 +140,10 @@ public class FieldTypeTest {
         Field field = PowerMockito.mock(Field.class);
         Map<String, String> options = mock(Map.class);
 
-        when(helper.convertDefaultValue(field, "otherDefault", options)).thenReturn(expectedDefaultValue);
+        when(helper2.convertDefaultValue(field, "otherDefault", options)).thenReturn(expectedDefaultValue);
 
         // when
-        Object defaultValue = FieldType.TEXT.convertDefaultValue(field, "otherDefault", options);
+        Object defaultValue = FieldType.TEXT.getType().convertDefaultValue(field, "otherDefault", options);
 
         // then
         assertSame(expectedDefaultValue, defaultValue);
