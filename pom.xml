@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>android-sdk</artifactId>
 	<groupId>com.mobeelizer</groupId>
-	<version>1.1.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>Mobeelizer SDK</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -254,6 +254,10 @@
 			<id>qcadoo-snapshots-repository</id>
 			<url>http://nexus.qcadoo.org/content/repositories/snapshots</url>
 		</pluginRepository>
+		<pluginRepository>
+			<id>qcadoo-releases-repository</id>
+			<url>http://nexus.qcadoo.org/content/repositories/releases</url>
+		</pluginRepository>
 	</pluginRepositories>
 
 	<repositories>
@@ -298,7 +302,6 @@
 	    <connection>scm:git:ssh://github.com/mobeelizer/android-sdk.git</connection>
         <developerConnection>scm:git:git@github.com:mobeelizer/android-sdk.git</developerConnection>
         <url>http://github.com/mobeelizer/android-sdk</url>
-    <tag>1.1.0</tag>
   </scm>
   
 </project>
