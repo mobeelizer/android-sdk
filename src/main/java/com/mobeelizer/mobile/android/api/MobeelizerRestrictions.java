@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 import com.mobeelizer.mobile.android.search.MobeelizerBelongsToRestritionImpl;
 import com.mobeelizer.mobile.android.search.MobeelizerBetweenRestritionImpl;
@@ -60,14 +61,14 @@ public final class MobeelizerRestrictions {
          * 
          * @since 1.0
          */
-        ANYWHERE("*", "*"),
+        ANYWHERE("%", "%"),
 
         /**
          * Match at the end.
          * 
          * @since 1.0
          */
-        END("", "*"),
+        END("%", ""),
 
         /**
          * Match exact value.
@@ -81,7 +82,7 @@ public final class MobeelizerRestrictions {
          * 
          * @since 1.0
          */
-        START("*", "");
+        START("", "%");
 
         private final String prefix;
 
@@ -549,6 +550,10 @@ public final class MobeelizerRestrictions {
         return new MobeelizerBelongsToRestritionImpl(field, clazz, guid);
     }
 
+    public static MobeelizerCriterion belongsTo(final String field, final String model, final String guid) {
+        return new MobeelizerBelongsToRestritionImpl(field, model, guid);
+    }
+
     /**
      * Create criterion that checks if field is equal to the given entity.
      * 
@@ -561,7 +566,7 @@ public final class MobeelizerRestrictions {
      */
     public static MobeelizerCriterion belongsTo(final String field, final Object entity) {
         return new MobeelizerBelongsToRestritionImpl(field, entity.getClass(), (String) getValue(
-                getField(entity.getClass(), "guid", String.class), entity));
+                new ReflectionMobeelizerFieldAccessor(getField(entity.getClass(), "guid", String.class)), entity));
     }
 
     /**

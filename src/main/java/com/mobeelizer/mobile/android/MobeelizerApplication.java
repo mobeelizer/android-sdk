@@ -20,14 +20,18 @@
 
 package com.mobeelizer.mobile.android;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -48,6 +52,7 @@ import com.mobeelizer.mobile.android.api.MobeelizerCommunicationStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncCallback;
+import com.mobeelizer.mobile.android.api.MobeelizerSyncListener;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
@@ -69,29 +74,25 @@ public class MobeelizerApplication {
 
     private static final String META_DEVELOPMENT_ROLE = "MOBEELIZER_DEVELOPMENT_ROLE";
 
-    private final String vendor;
+    private String vendor;
 
-    private final String application;
+    private String application;
 
-    private final String versionDigest;
+    private String versionDigest;
 
-    private final String device;
+    private String device;
 
-    private final String deviceIdentifier;
+    private String deviceIdentifier;
 
-    private final String entityPackage;
+    private String entityPackage;
 
-    private final Mobeelizer mobeelizer;
+    private Application mobeelizer;
 
-    private final int databaseVersion;
+    private int databaseVersion;
 
-    private final MobeelizerMode mode;
+    private MobeelizerMode mode;
 
-    private final String developmentRole;
-
-    private final String url;
-
-    private String definitionXml;
+    private String url;
 
     private String instance;
 
@@ -109,19 +110,79 @@ public class MobeelizerApplication {
 
     private MobeelizerDatabaseImpl database;
 
-    private final MobeelizerInternalDatabase internalDatabase;
+    private MobeelizerInternalDatabase internalDatabase;
 
     private MobeelizerApplicationDefinition definition;
 
     private final MobeelizerDefinitionConverter definitionConverter = new MobeelizerDefinitionConverter();
 
-    private final MobeelizerConnectionManager connectionManager;
+    private MobeelizerConnectionManager connectionManager;
 
-    private final MobeelizerFileService fileService;
+    private MobeelizerFileService fileService;
 
     private MobeelizerSyncStatus syncStatus = MobeelizerSyncStatus.NONE;
 
-    public MobeelizerApplication(final Mobeelizer mobeelizer) {
+    private final List<MobeelizerSyncListener> syncListeners = new LinkedList<MobeelizerSyncListener>();
+
+    private MobeelizerApplication() {
+    }
+
+    public static MobeelizerApplication createApplication(final Application mobeelizer) {
+        MobeelizerApplication application = new MobeelizerApplication();
+        Bundle metaData = application.getMetaData(mobeelizer);
+        String device = metaData.getString(META_DEVICE);
+        String entityPackage = metaData.getString(META_PACKAGE);
+        String definitionXml = metaData.getString(META_DEFINITION_ASSET);
+        String developmentRole = metaData.getString(META_DEVELOPMENT_ROLE);
+        int databaseVersion = metaData.getInt(META_DATABASE_VERSION, 1);
+        String url = metaData.getString(META_URL);
+        String stringMode = metaData.getString(META_MODE);
+
+        if (entityPackage == null) {
+            throw new IllegalStateException(META_PACKAGE + " must be set in manifest file.");
+        }
+
+        if (definitionXml == null) {
+            definitionXml = "application.xml";
+        }
+
+        application.initApplication(mobeelizer, device, entityPackage, developmentRole, definitionXml, databaseVersion, url,
+                stringMode);
+
+        return application;
+    }
+
+    public static MobeelizerApplication createApplicationForTitanium(final Application mobeelizer) {
+        MobeelizerApplication application = new MobeelizerApplication();
+
+        Properties properties = new Properties();
+        try {
+            properties.load(application.getDefinitionXmlAsset(mobeelizer, "Resources/mobeelizer.properties"));
+        } catch (FileNotFoundException e) {
+            throw new IllegalStateException("'mobeelizer.properties' file is required", e);
+        } catch (IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+        String device = properties.getProperty("device");
+        String developmentRole = properties.getProperty("role");
+        String definitionXml = properties.getProperty("definitionXml");
+        String url = properties.getProperty("url");
+        String stringMode = properties.getProperty("mode");
+
+        if (definitionXml == null) {
+            definitionXml = "application.xml";
+        }
+        definitionXml = "Resources/" + definitionXml;
+
+        application.initApplication(mobeelizer, device, null, developmentRole, definitionXml, 1, url, stringMode);
+
+        return application;
+    }
+
+    private void initApplication(final Application mobeelizer, final String device, final String entityPackage,
+            final String developmentRole, final String definitionXml, final int databaseVersion, final String url,
+            final String stringMode) {
         Log.i(TAG, "Creating Mobeelizer SDK " + Mobeelizer.VERSION);
 
         this.mobeelizer = mobeelizer;
@@ -137,20 +198,14 @@ public class MobeelizerApplication {
             }
         }
 
-        Bundle metaData = getMetaData(mobeelizer);
+        this.device = device;
+        this.entityPackage = entityPackage;
+        this.databaseVersion = databaseVersion;
+        this.url = url;
 
-        device = metaData.getString(META_DEVICE);
-        entityPackage = metaData.getString(META_PACKAGE);
-        definitionXml = metaData.getString(META_DEFINITION_ASSET);
-        developmentRole = metaData.getString(META_DEVELOPMENT_ROLE);
-        databaseVersion = metaData.getInt(META_DATABASE_VERSION, 1);
-        url = metaData.getString(META_URL);
-
-        if (device == null || entityPackage == null) {
-            throw new IllegalStateException(META_DEVICE + " and " + META_PACKAGE + " must be set in manifest file.");
+        if (device == null) {
+            throw new IllegalStateException(META_DEVICE + " must be set in manifest file.");
         }
-
-        String stringMode = metaData.getString(META_MODE);
 
         if (stringMode == null) {
             mode = MobeelizerMode.DEVELOPMENT;
@@ -160,10 +215,6 @@ public class MobeelizerApplication {
 
         if (mode == MobeelizerMode.DEVELOPMENT && developmentRole == null) {
             throw new IllegalStateException(META_DEVELOPMENT_ROLE + " must be set in development MobeelizerMode.");
-        }
-
-        if (definitionXml == null) {
-            definitionXml = "application.xml";
         }
 
         deviceIdentifier = ((TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
@@ -201,7 +252,7 @@ public class MobeelizerApplication {
         return login(mode == MobeelizerMode.PRODUCTION ? "production" : "test", user, password);
     }
 
-    void login(final String instance, final String user, final String password, final MobeelizerLoginCallback callback) {
+    public void login(final String instance, final String user, final String password, final MobeelizerLoginCallback callback) {
         new AsyncTask<Void, Void, MobeelizerLoginStatus>() {
 
             @Override
@@ -218,7 +269,7 @@ public class MobeelizerApplication {
         }.execute();
     }
 
-    MobeelizerLoginStatus login(final String instance, final String user, final String password) {
+    public MobeelizerLoginStatus login(final String instance, final String user, final String password) {
         if (isLoggedIn()) {
             logout();
         }
@@ -261,7 +312,7 @@ public class MobeelizerApplication {
         return MobeelizerLoginStatus.OK;
     }
 
-    void logout() {
+    public void logout() {
         if (!isLoggedIn()) {
             return; // ignore
         }
@@ -284,25 +335,25 @@ public class MobeelizerApplication {
         loggedIn = false;
     }
 
-    void sync(final MobeelizerSyncCallback callback) {
+    public void sync(final MobeelizerSyncCallback callback) {
         checkIfLoggedIn();
         Log.i(TAG, "Start sync service.");
         sync(false, callback);
     }
 
-    MobeelizerSyncStatus sync() {
+    public MobeelizerSyncStatus sync() {
         checkIfLoggedIn();
         Log.i(TAG, "Truncate data and start sync service.");
         return sync(false);
     }
 
-    void syncAll(final MobeelizerSyncCallback callback) {
+    public void syncAll(final MobeelizerSyncCallback callback) {
         checkIfLoggedIn();
         Log.i(TAG, "Truncate data and start sync service.");
         sync(true, callback);
     }
 
-    MobeelizerSyncStatus syncAll() {
+    public MobeelizerSyncStatus syncAll() {
         checkIfLoggedIn();
         Log.i(TAG, "Truncate data and start sync service.");
         return sync(true);
@@ -346,7 +397,7 @@ public class MobeelizerApplication {
         return connectionManager;
     }
 
-    MobeelizerSyncStatus checkSyncStatus() {
+    public MobeelizerSyncStatus checkSyncStatus() {
         checkIfLoggedIn();
         Log.i(TAG, "Check sync status.");
 
@@ -357,15 +408,22 @@ public class MobeelizerApplication {
         return syncStatus;
     }
 
-    void setSyncStatus(final MobeelizerSyncStatus status) {
-        this.syncStatus = status;
+    public void registerSyncListener(final MobeelizerSyncListener listener) {
+        syncListeners.add(listener);
     }
 
-    boolean isLoggedIn() {
+    void setSyncStatus(final MobeelizerSyncStatus status) {
+        this.syncStatus = status;
+        for (MobeelizerSyncListener listener : syncListeners) {
+            listener.onSyncStatusChange(status);
+        }
+    }
+
+    public boolean isLoggedIn() {
         return loggedIn;
     }
 
-    MobeelizerCommunicationStatus registerForRemoteNotifications(final String registrationId) {
+    public MobeelizerCommunicationStatus registerForRemoteNotifications(final String registrationId) {
         try {
             remoteNotificationToken = registrationId;
             if (isLoggedIn()) {
@@ -374,7 +432,7 @@ public class MobeelizerApplication {
             return MobeelizerCommunicationStatus.SUCCESS;
         } catch (ConnectionException e) {
             Log.e(TAG, e.getMessage(), e);
-            return MobeelizerCommunicationStatus.CONNECTION_FAILURE;
+            return MobeelizerCommunicationStatus.FAILURE;
         }
     }
 
@@ -385,18 +443,18 @@ public class MobeelizerApplication {
             return MobeelizerCommunicationStatus.SUCCESS;
         } catch (ConnectionException e) {
             Log.e(TAG, e.getMessage(), e);
-            return MobeelizerCommunicationStatus.CONNECTION_FAILURE;
+            return MobeelizerCommunicationStatus.FAILURE;
         }
     }
 
-    MobeelizerCommunicationStatus sendRemoteNotification(final String device, final String group, final List<String> users,
-            final Map<String, String> notification) {
+    public MobeelizerCommunicationStatus sendRemoteNotification(final String device, final String group,
+            final List<String> users, final Map<String, String> notification) {
         try {
             connectionManager.sendRemoteNotification(device, group, users, notification);
             return MobeelizerCommunicationStatus.SUCCESS;
         } catch (ConnectionException e) {
             Log.e(TAG, e.getMessage(), e);
-            return MobeelizerCommunicationStatus.CONNECTION_FAILURE;
+            return MobeelizerCommunicationStatus.FAILURE;
         }
     }
 
@@ -412,7 +470,7 @@ public class MobeelizerApplication {
         return instance;
     }
 
-    MobeelizerDatabaseImpl getDatabase() {
+    public MobeelizerDatabaseImpl getDatabase() {
         checkIfLoggedIn();
         return database;
     }
@@ -479,7 +537,7 @@ public class MobeelizerApplication {
         }
     }
 
-    private Bundle getMetaData(final Mobeelizer mobeelizer) {
+    private Bundle getMetaData(final Application mobeelizer) {
         try {
             return mobeelizer.getPackageManager().getApplicationInfo(mobeelizer.getPackageName(), PackageManager.GET_META_DATA).metaData;
         } catch (NameNotFoundException e) {
@@ -487,7 +545,7 @@ public class MobeelizerApplication {
         }
     }
 
-    private InputStream getDefinitionXmlAsset(final Mobeelizer mobeelizer, final String definitionXml) throws IOException {
+    private InputStream getDefinitionXmlAsset(final Application mobeelizer, final String definitionXml) throws IOException {
         return mobeelizer.getAssets().open(definitionXml);
     }
 

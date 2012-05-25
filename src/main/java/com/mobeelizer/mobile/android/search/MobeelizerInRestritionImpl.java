@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
+
 public class MobeelizerInRestritionImpl implements MobeelizerInternalCriterion {
 
     private final String field;
@@ -36,22 +38,26 @@ public class MobeelizerInRestritionImpl implements MobeelizerInternalCriterion {
     }
 
     @Override
-    public String addToQuery(final List<String> selectionArgs) {
+    public String addToQuery(final List<String> selectionArgs, final MobeelizerAndroidModel model) {
         if (values.isEmpty()) {
             return "1 = 1";
         }
 
-        StringBuilder builder = new StringBuilder();
-
+        StringBuilder builder = new StringBuilder(field);
+        builder.append(" in (");
+        boolean first = true;
         for (Object value : values) {
-            if (builder.length() > 0) {
+            if (first) {
+                first = false;
+            } else {
                 builder.append(", ");
             }
-            builder.append(value.toString());
+            builder.append("?");
+
+            selectionArgs.add(model.convertToDatabaseValue(field, value));
         }
+        builder.append(")");
 
-        selectionArgs.add(builder.toString());
-
-        return field + " in (?)";
+        return builder.toString();
     }
 }

@@ -50,44 +50,49 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ IntegerFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class })
 public class IntegerFieldTypeHelperTest {
 
-    private Field fieldIntegerO;
+    private MobeelizerFieldAccessor fieldIntegerO;
 
-    private Field fieldIntegerP;
+    private MobeelizerFieldAccessor fieldIntegerP;
 
-    private Field fieldShortO;
+    private MobeelizerFieldAccessor fieldShortO;
 
-    private Field fieldShortP;
+    private MobeelizerFieldAccessor fieldShortP;
 
-    private Field fieldLongO;
+    private MobeelizerFieldAccessor fieldLongO;
 
-    private Field fieldLongP;
+    private MobeelizerFieldAccessor fieldLongP;
 
-    private Field fieldByteO;
+    private MobeelizerFieldAccessor fieldByteO;
 
-    private Field fieldByteP;
+    private MobeelizerFieldAccessor fieldByteP;
 
-    private Field fieldBigInteger;
+    private MobeelizerFieldAccessor fieldBigInteger;
 
     @Before
     public void init() {
         HashSet<Class<?>> types = new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { Integer.class, Integer.TYPE, Short.class,
                 Short.TYPE, Byte.class, Byte.TYPE, Long.class, Long.TYPE, BigInteger.class }));
-        fieldIntegerO = MobeelizerReflectionUtil.getField(TestEntity.class, "integerO", types);
-        fieldIntegerP = MobeelizerReflectionUtil.getField(TestEntity.class, "integerP", types);
-        fieldShortO = MobeelizerReflectionUtil.getField(TestEntity.class, "shortO", types);
-        fieldShortP = MobeelizerReflectionUtil.getField(TestEntity.class, "shortP", types);
-        fieldLongO = MobeelizerReflectionUtil.getField(TestEntity.class, "longO", types);
-        fieldLongP = MobeelizerReflectionUtil.getField(TestEntity.class, "longP", types);
-        fieldByteO = MobeelizerReflectionUtil.getField(TestEntity.class, "byteO", types);
-        fieldByteP = MobeelizerReflectionUtil.getField(TestEntity.class, "byteP", types);
-        fieldBigInteger = MobeelizerReflectionUtil.getField(TestEntity.class, "bigInteger", types);
+        fieldIntegerO = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "integerO",
+                types));
+        fieldIntegerP = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "integerP",
+                types));
+        fieldShortO = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "shortO", types));
+        fieldShortP = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "shortP", types));
+        fieldLongO = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "longO", types));
+        fieldLongP = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "longP", types));
+        fieldByteO = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "byteO", types));
+        fieldByteP = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "byteP", types));
+        fieldBigInteger = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "bigInteger",
+                types));
     }
 
     @Test
@@ -132,7 +137,8 @@ public class IntegerFieldTypeHelperTest {
         shouldSetValueFromEntityToDatabase(fieldBigInteger, BigInteger.valueOf(123L), 123L);
     }
 
-    private void shouldSetValueFromEntityToDatabase(final Field field, final Object entityValue, final Long contentValue) {
+    private void shouldSetValueFromEntityToDatabase(final MobeelizerFieldAccessor field, final Object entityValue,
+            final Long contentValue) {
         Map<String, String> options = new HashMap<String, String>();
         options.put("minValue", "-101");
         options.put("maxValue", "1001");
@@ -146,8 +152,6 @@ public class IntegerFieldTypeHelperTest {
         try {
             field.set(entity, entityValue);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
 
@@ -244,7 +248,7 @@ public class IntegerFieldTypeHelperTest {
         shouldNotSetValueFromDatabaseToEntity(fieldByteP, Long.valueOf(Byte.MIN_VALUE) - 1);
     }
 
-    private void shouldNotSetValueFromDatabaseToEntity(final Field field, final Long databaseValue) {
+    private void shouldNotSetValueFromDatabaseToEntity(final MobeelizerFieldAccessor field, final Long databaseValue) {
         // given
         Map<String, String> options = new HashMap<String, String>();
 
@@ -264,7 +268,8 @@ public class IntegerFieldTypeHelperTest {
         }
     }
 
-    private void shouldSetValueFromDatabaseToEntity(final Field field, final Long databaseValue, final Object entityValue) {
+    private void shouldSetValueFromDatabaseToEntity(final MobeelizerFieldAccessor field, final Long databaseValue,
+            final Object entityValue) {
         // given
         Map<String, String> options = new HashMap<String, String>();
 
@@ -282,8 +287,6 @@ public class IntegerFieldTypeHelperTest {
         try {
             assertEquals(entityValue, field.get(entity));
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage());
-        } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage());
         }
     }

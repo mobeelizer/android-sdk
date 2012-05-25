@@ -21,11 +21,15 @@
 package com.mobeelizer.mobile.android.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerBetweenRestritionImplTest {
 
@@ -34,14 +38,18 @@ public class MobeelizerBetweenRestritionImplTest {
         // given
         MobeelizerBetweenRestritionImpl restrition = new MobeelizerBetweenRestritionImpl("field", "o1", "o2");
         List<String> selectionArgs = new ArrayList<String>();
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
+        when(model.convertToDatabaseValue("field", "o1")).thenReturn("converted1");
+        when(model.convertToDatabaseValue("field", "o2")).thenReturn("converted2");
 
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(2, selectionArgs.size());
-        assertEquals("o1", selectionArgs.get(0));
-        assertEquals("o2", selectionArgs.get(1));
+        assertEquals("converted1", selectionArgs.get(0));
+        assertEquals("converted2", selectionArgs.get(1));
         assertEquals("field between ? and ?", query);
     }
 

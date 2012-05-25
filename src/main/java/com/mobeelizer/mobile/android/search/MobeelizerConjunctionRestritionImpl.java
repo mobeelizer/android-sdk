@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.mobeelizer.mobile.android.api.MobeelizerConjunction;
 import com.mobeelizer.mobile.android.api.MobeelizerCriterion;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerConjunctionRestritionImpl implements MobeelizerInternalCriterion, MobeelizerConjunction {
 
@@ -37,7 +38,7 @@ public class MobeelizerConjunctionRestritionImpl implements MobeelizerInternalCr
     }
 
     @Override
-    public String addToQuery(final List<String> selectionArgs) {
+    public String addToQuery(final List<String> selectionArgs, final MobeelizerAndroidModel model) {
         if (criterions.isEmpty()) {
             return "1 = 1";
         }
@@ -45,7 +46,7 @@ public class MobeelizerConjunctionRestritionImpl implements MobeelizerInternalCr
         List<String> builder = new ArrayList<String>();
 
         for (MobeelizerCriterion criterion : criterions) {
-            builder.add(((MobeelizerInternalCriterion) criterion).addToQuery(selectionArgs));
+            builder.add(((MobeelizerInternalCriterion) criterion).addToQuery(selectionArgs, model));
         }
 
         return "(" + MobeelizerCriteriaBuilderImpl.joinList(builder, ") and (") + ")";

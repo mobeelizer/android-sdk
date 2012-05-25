@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
+
 public class MobeelizerNotRestritionImplTest {
 
     @Test
@@ -38,10 +40,12 @@ public class MobeelizerNotRestritionImplTest {
         MobeelizerNotRestritionImpl restrition = new MobeelizerNotRestritionImpl(criterion);
         List<String> selectionArgs = new ArrayList<String>();
 
-        when(criterion.addToQuery(selectionArgs)).thenReturn("c1");
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
+        when(criterion.addToQuery(selectionArgs, model)).thenReturn("c1");
 
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(0, selectionArgs.size());

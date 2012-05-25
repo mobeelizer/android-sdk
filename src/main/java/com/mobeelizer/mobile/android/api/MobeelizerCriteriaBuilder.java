@@ -21,6 +21,7 @@
 package com.mobeelizer.mobile.android.api;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Representation of the query builder.<br/>
@@ -49,6 +50,8 @@ public interface MobeelizerCriteriaBuilder<T> {
     // @throws IllegalStateException if projection was set
     List<T> list();
 
+    List<Map<String, Object>> listAsMaps();
+
     /**
      * Count the entities matching to this query.
      * 
@@ -74,6 +77,8 @@ public interface MobeelizerCriteriaBuilder<T> {
      */
     // @throws IllegalStateException if projection was set
     T uniqueResult();
+
+    Map<String, Object> uniqueResultAsMap();
 
     /**
      * Set the max results, by default there is no limit.

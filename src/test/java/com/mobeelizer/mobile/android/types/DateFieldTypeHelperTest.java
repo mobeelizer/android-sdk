@@ -50,29 +50,32 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DateFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class })
 public class DateFieldTypeHelperTest {
 
-    private Field fieldDate;
+    private MobeelizerFieldAccessor fieldDate;
 
-    private Field fieldCalendar;
+    private MobeelizerFieldAccessor fieldCalendar;
 
-    private Field fieldLongO;
+    private MobeelizerFieldAccessor fieldLongO;
 
-    private Field fieldLongP;
+    private MobeelizerFieldAccessor fieldLongP;
 
     @Before
     public void init() {
         HashSet<Class<?>> types = new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { Date.class, Long.class, Long.TYPE,
                 Calendar.class }));
-        fieldLongO = MobeelizerReflectionUtil.getField(TestEntity.class, "longO", types);
-        fieldLongP = MobeelizerReflectionUtil.getField(TestEntity.class, "longP", types);
-        fieldDate = MobeelizerReflectionUtil.getField(TestEntity.class, "date", types);
-        fieldCalendar = MobeelizerReflectionUtil.getField(TestEntity.class, "calendar", types);
+        fieldLongO = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "longO", types));
+        fieldLongP = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "longP", types));
+        fieldDate = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "date", types));
+        fieldCalendar = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "calendar",
+                types));
     }
 
     @Test
@@ -109,7 +112,8 @@ public class DateFieldTypeHelperTest {
         shouldSetValueFromEntityToDatabase(fieldCalendar, c, 13L);
     }
 
-    private void shouldSetValueFromEntityToDatabase(final Field field, final Object entityValue, final Long contentValue) {
+    private void shouldSetValueFromEntityToDatabase(final MobeelizerFieldAccessor field, final Object entityValue,
+            final Long contentValue) {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
@@ -121,8 +125,6 @@ public class DateFieldTypeHelperTest {
         try {
             field.set(entity, entityValue);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
 
@@ -160,7 +162,8 @@ public class DateFieldTypeHelperTest {
         shouldSetValueFromDatabaseToEntity(fieldCalendar, 13L, c);
     }
 
-    private void shouldSetValueFromDatabaseToEntity(final Field field, final Long databaseValue, final Object entityValue) {
+    private void shouldSetValueFromDatabaseToEntity(final MobeelizerFieldAccessor field, final Long databaseValue,
+            final Object entityValue) {
         // given
         Map<String, String> options = new HashMap<String, String>();
 
@@ -178,8 +181,6 @@ public class DateFieldTypeHelperTest {
         try {
             assertEquals(entityValue, field.get(entity));
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage());
-        } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage());
         }
     }

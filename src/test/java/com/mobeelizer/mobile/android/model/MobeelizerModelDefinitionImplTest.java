@@ -119,7 +119,7 @@ public class MobeelizerModelDefinitionImplTest {
         when(credentials.getDeleteAllowed()).thenReturn(MobeelizerCredential.ALL);
         when(credentials.getReadAllowed()).thenReturn(MobeelizerCredential.ALL);
 
-        definition = new MobeelizerAndroidModel(new MobeelizerModelImpl(TestEntity.class, "modelName", credentials, fields));
+        definition = new MobeelizerAndroidModel(new MobeelizerModelImpl(TestEntity.class, "testentity", credentials, fields));
         simpleDefinition = new MobeelizerAndroidModel(new MobeelizerModelImpl(TestSimpleEntity.class, "simpleModelName",
                 credentials, fields));
 
@@ -135,7 +135,7 @@ public class MobeelizerModelDefinitionImplTest {
         String name = definition.getName();
 
         // then
-        assertEquals("modelName", name);
+        assertEquals("testentity", name);
     }
 
     @Test
@@ -381,27 +381,6 @@ public class MobeelizerModelDefinitionImplTest {
     }
 
     @Test
-    public void shouldSimpleGet() throws Exception {
-        // given
-        Cursor cursor = mock(Cursor.class);
-        when(cursor.moveToNext()).thenReturn(true);
-
-        when(cursor.getColumnIndex("_guid")).thenReturn(1);
-        when(cursor.getString(1)).thenReturn("guid");
-
-        whenGetByGuid("testsimpleentity", "guid").thenReturn(cursor);
-
-        // when
-        TestSimpleEntity entity = simpleDefinition.get(database, "guid");
-
-        // then
-        assertNotNull(entity);
-        assertEquals("guid", entity.getGuid());
-        verify(field2).setValueFromDatabaseToEntity(cursor, entity);
-        verify(cursor).close();
-    }
-
-    @Test
     public void shouldGetJson() throws Exception {
         // given
         Cursor cursor = mock(Cursor.class);
@@ -426,7 +405,7 @@ public class MobeelizerModelDefinitionImplTest {
         assertNotNull(entity);
         assertEquals("guid", entity.getGuid());
         assertEquals("owner", entity.getOwner());
-        assertEquals("modelName", entity.getModel());
+        assertEquals("testentity", entity.getModel());
         assertTrue(entity.isDeleted());
         assertSame(map, entity.getFields());
         verify(field2).setValueFromDatabaseToMap(cursor, map);
@@ -481,15 +460,20 @@ public class MobeelizerModelDefinitionImplTest {
     @Test
     public void shouldCount() throws Exception {
         // given
-        PowerMockito.mockStatic(DatabaseUtils.class);
+        Cursor cursor = mock(Cursor.class);
+        when(cursor.moveToNext()).thenReturn(true);
+        when(cursor.getLong(0)).thenReturn(12L);
 
-        PowerMockito.when(DatabaseUtils.queryNumEntries(database, "testentity")).thenReturn(12L);
+        when(
+                database.query("testentity", new String[] { "count(*)" }, MobeelizerAndroidModel._DELETED + " = 0", null, null,
+                        null, null)).thenReturn(cursor);
 
         // when
         long count = definition.count(database);
 
         // then
         assertEquals(12L, count);
+        verify(cursor).close();
     }
 
     @Test

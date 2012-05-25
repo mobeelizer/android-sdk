@@ -72,14 +72,23 @@ public class MobeelizerFileImpl implements MobeelizerFile {
 
     @Override
     public InputStream getInputStream() {
-        if (file == null || !file.exists() || !file.canRead()) {
-            return null; // TODO V3 external storage was removed?
-        }
         try {
+            File file = getFile();
+            if (file == null) {
+                return null;
+            }
             return new FileInputStream(file);
         } catch (FileNotFoundException e) {
             return null;
         }
+    }
+
+    @Override
+    public File getFile() {
+        if (file == null || !file.exists() || !file.canRead()) {
+            return null; // TODO V3 external storage was removed?
+        }
+        return file;
     }
 
 }

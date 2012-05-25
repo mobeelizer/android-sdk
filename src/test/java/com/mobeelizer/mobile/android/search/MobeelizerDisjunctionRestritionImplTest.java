@@ -29,6 +29,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
+
 public class MobeelizerDisjunctionRestritionImplTest {
 
     @Test
@@ -41,13 +43,15 @@ public class MobeelizerDisjunctionRestritionImplTest {
         restrition.add(criterion1);
         restrition.add(criterion2);
 
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
         List<String> selectionArgs = new ArrayList<String>();
 
-        when(criterion1.addToQuery(selectionArgs)).thenReturn("c1");
-        when(criterion2.addToQuery(selectionArgs)).thenReturn("c2");
+        when(criterion1.addToQuery(selectionArgs, model)).thenReturn("c1");
+        when(criterion2.addToQuery(selectionArgs, model)).thenReturn("c2");
 
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(0, selectionArgs.size());
@@ -60,8 +64,10 @@ public class MobeelizerDisjunctionRestritionImplTest {
         MobeelizerDisjunctionRestritionImpl restrition = new MobeelizerDisjunctionRestritionImpl();
         List<String> selectionArgs = new ArrayList<String>();
 
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(0, selectionArgs.size());

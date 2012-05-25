@@ -47,21 +47,24 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ TextFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class })
 public class TextFieldTypeHelperTest {
 
-    private Field fieldString;
+    private MobeelizerFieldAccessor fieldString;
 
     @Before
     public void init() {
         PowerMockito.mockStatic(DatabaseUtils.class);
         PowerMockito.when(DatabaseUtils.sqlEscapeString("default")).thenReturn("'escapedDefault'");
 
-        fieldString = MobeelizerReflectionUtil.getField(TestEntity.class, "string", String.class);
+        fieldString = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "string",
+                String.class));
     }
 
     @Test

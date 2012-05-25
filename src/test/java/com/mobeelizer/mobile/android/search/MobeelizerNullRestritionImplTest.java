@@ -21,11 +21,14 @@
 package com.mobeelizer.mobile.android.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerNullRestritionImplTest {
 
@@ -35,8 +38,10 @@ public class MobeelizerNullRestritionImplTest {
         MobeelizerNullRestritionImpl restrition = new MobeelizerNullRestritionImpl("field", true);
         List<String> selectionArgs = new ArrayList<String>();
 
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(0, selectionArgs.size());
@@ -49,8 +54,10 @@ public class MobeelizerNullRestritionImplTest {
         MobeelizerNullRestritionImpl restrition = new MobeelizerNullRestritionImpl("field", false);
         List<String> selectionArgs = new ArrayList<String>();
 
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(0, selectionArgs.size());

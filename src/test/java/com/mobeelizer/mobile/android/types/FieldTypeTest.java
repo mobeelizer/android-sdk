@@ -42,6 +42,7 @@ import android.database.Cursor;
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.definition.type.helpers.MobeelizerFieldTypeHelper;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
@@ -72,7 +73,7 @@ public class FieldTypeTest {
     public void shouldGetDefinition() throws Exception {
         // given
         String[] expectedDefinition = new String[2];
-        Field field = PowerMockito.mock(Field.class);
+        MobeelizerFieldAccessor field = PowerMockito.mock(MobeelizerFieldAccessor.class);
         Map<String, String> options = mock(Map.class);
 
         when(helper.getDefinition(field, true, "default", options)).thenReturn(expectedDefinition);
@@ -105,7 +106,7 @@ public class FieldTypeTest {
         // given
         Cursor cursor = mock(Cursor.class);
         TestEntity entity = mock(TestEntity.class);
-        Field field = PowerMockito.mock(Field.class);
+        MobeelizerFieldAccessor field = PowerMockito.mock(MobeelizerFieldAccessor.class);
         Map<String, String> options = mock(Map.class);
 
         // when
@@ -120,7 +121,7 @@ public class FieldTypeTest {
     public void shouldSetValueFromEntityToDatabase() throws Exception {
         // given
         TestEntity entity = mock(TestEntity.class);
-        Field field = PowerMockito.mock(Field.class);
+        MobeelizerFieldAccessor field = PowerMockito.mock(MobeelizerFieldAccessor.class);
         Map<String, String> options = mock(Map.class);
         ContentValues values = mock(ContentValues.class);
         MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
@@ -137,7 +138,7 @@ public class FieldTypeTest {
     public void shouldConvertDefaultValue() throws Exception {
         // given
         Object expectedDefaultValue = new Object();
-        Field field = PowerMockito.mock(Field.class);
+        MobeelizerFieldAccessor field = PowerMockito.mock(MobeelizerFieldAccessor.class);
         Map<String, String> options = mock(Map.class);
 
         when(helper2.convertDefaultValue(field, "otherDefault", options)).thenReturn(expectedDefaultValue);

@@ -22,6 +22,8 @@ package com.mobeelizer.mobile.android.search;
 
 import java.util.List;
 
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
+
 public class MobeelizerBelongsToRestritionImpl implements MobeelizerInternalCriterion {
 
     private final String field;
@@ -33,8 +35,13 @@ public class MobeelizerBelongsToRestritionImpl implements MobeelizerInternalCrit
         this.guid = guid;
     }
 
+    public MobeelizerBelongsToRestritionImpl(final String field, final String model, final String guid) {
+        this.field = field;
+        this.guid = guid;
+    }
+
     @Override
-    public String addToQuery(final List<String> selectionArgs) {
+    public String addToQuery(final List<String> selectionArgs, final MobeelizerAndroidModel model) {
         selectionArgs.add(guid);
         return field + " = ?";
     }

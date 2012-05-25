@@ -278,7 +278,7 @@ public class MobeelizerRestrictionsTest {
     public void shouldCreateLike2() throws Exception {
         // given
         MobeelizerOperatorRestritionImpl expectedRestriction = mock(MobeelizerOperatorRestritionImpl.class);
-        PowerMockito.whenNew(MobeelizerOperatorRestritionImpl.class).withArguments("field", "like", "*v\\%a\\_l\\*u\\?e*")
+        PowerMockito.whenNew(MobeelizerOperatorRestritionImpl.class).withArguments("field", "like", "%v\\%a\\_l\\*u\\?e%")
                 .thenReturn(expectedRestriction);
         // when
         MobeelizerCriterion order = MobeelizerRestrictions.like("field", "v%a_l*u?e", MatchMode.ANYWHERE);
@@ -291,7 +291,7 @@ public class MobeelizerRestrictionsTest {
     public void shouldCreateLike3() throws Exception {
         // given
         MobeelizerOperatorRestritionImpl expectedRestriction = mock(MobeelizerOperatorRestritionImpl.class);
-        PowerMockito.whenNew(MobeelizerOperatorRestritionImpl.class).withArguments("field", "like", "v\\%a\\_l\\*u\\?e*")
+        PowerMockito.whenNew(MobeelizerOperatorRestritionImpl.class).withArguments("field", "like", "%v\\%a\\_l\\*u\\?e")
                 .thenReturn(expectedRestriction);
         // when
         MobeelizerCriterion order = MobeelizerRestrictions.like("field", "v%a_l*u?e", MatchMode.END);
@@ -304,7 +304,7 @@ public class MobeelizerRestrictionsTest {
     public void shouldCreateLike4() throws Exception {
         // given
         MobeelizerOperatorRestritionImpl expectedRestriction = mock(MobeelizerOperatorRestritionImpl.class);
-        PowerMockito.whenNew(MobeelizerOperatorRestritionImpl.class).withArguments("field", "like", "*v\\%a\\_l\\*u\\?e")
+        PowerMockito.whenNew(MobeelizerOperatorRestritionImpl.class).withArguments("field", "like", "v\\%a\\_l\\*u\\?e%")
                 .thenReturn(expectedRestriction);
         // when
         MobeelizerCriterion order = MobeelizerRestrictions.like("field", "v%a_l*u?e", MatchMode.START);
@@ -600,7 +600,7 @@ public class MobeelizerRestrictionsTest {
     @Test
     public void shouldCreateBelongsTo() throws Exception {
         // given
-        Class<?> clazz = String.class;
+        Class<?> clazz = Boolean.class;
         MobeelizerBelongsToRestritionImpl expectedRestriction = mock(MobeelizerBelongsToRestritionImpl.class);
         PowerMockito.whenNew(MobeelizerBelongsToRestritionImpl.class).withArguments("field", clazz, "guid")
                 .thenReturn(expectedRestriction);

@@ -21,7 +21,6 @@
 package com.mobeelizer.mobile.android.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -29,11 +28,12 @@ import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
@@ -80,7 +80,8 @@ public class MobeelizerReflectionUtilTest {
     @Test
     public void shouldGetStringValue() throws Exception {
         // given
-        Field field = MobeelizerReflectionUtil.getField(TestEntity.class, "guid", String.class);
+        MobeelizerFieldAccessor field = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class,
+                "guid", String.class));
 
         TestEntity entity = new TestEntity();
         entity.setGuid("guid");
@@ -92,24 +93,11 @@ public class MobeelizerReflectionUtilTest {
         assertEquals("guid", value);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void shouldGetStringValueWithException() throws Exception {
-        // given
-        Field field = PowerMockito.mock(Field.class);
-
-        TestEntity entity = new TestEntity();
-        entity.setGuid("guid");
-
-        when(field.get(entity)).thenThrow(new IllegalAccessException());
-
-        // when
-        MobeelizerReflectionUtil.getValue(field, entity);
-    }
-
     @Test
     public void shouldSetValue() throws Exception {
         // given
-        Field field = MobeelizerReflectionUtil.getField(TestEntity.class, "owner", String.class);
+        MobeelizerFieldAccessor field = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class,
+                "owner", String.class));
 
         TestEntity entity = new TestEntity();
 
@@ -118,19 +106,6 @@ public class MobeelizerReflectionUtilTest {
 
         // then
         assertEquals("owner", entity.getOwner());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void shouldSetValueWithException() throws Exception {
-        // given
-        Field field = PowerMockito.mock(Field.class);
-
-        TestEntity entity = new TestEntity();
-
-        PowerMockito.doThrow(new IllegalAccessException()).when(field).set(entity, "value");
-
-        // when
-        MobeelizerReflectionUtil.setValue(field, entity, "value");
     }
 
 }

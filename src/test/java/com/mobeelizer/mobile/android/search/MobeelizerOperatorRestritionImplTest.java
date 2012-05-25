@@ -21,11 +21,15 @@
 package com.mobeelizer.mobile.android.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerOperatorRestritionImplTest {
 
@@ -35,12 +39,17 @@ public class MobeelizerOperatorRestritionImplTest {
         MobeelizerOperatorRestritionImpl restrition = new MobeelizerOperatorRestritionImpl("field", "operator", "value");
         List<String> selectionArgs = new ArrayList<String>();
 
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
+        when(model.convertToDatabaseValue("field", "1")).thenReturn("1");
+        when(model.convertToDatabaseValue("field", "value")).thenReturn("value2");
+
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(1, selectionArgs.size());
-        assertEquals("value", selectionArgs.get(0));
+        assertEquals("value2", selectionArgs.get(0));
         assertEquals("field operator ?", query);
     }
 

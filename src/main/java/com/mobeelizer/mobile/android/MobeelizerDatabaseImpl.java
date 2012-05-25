@@ -89,15 +89,21 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
 
     @Override
     public <T> MobeelizerErrors save(final T entity) {
-        MobeelizerAndroidModel model = getModel(entity.getClass());
-        MobeelizerErrorsHolder errors = new MobeelizerErrorsHolder();
+        return save(getModel(entity.getClass()), entity);
+    }
 
+    @Override
+    public MobeelizerErrors save(final Map<String, Object> entity) {
+        return save(getModelFromMap(entity), entity);
+    }
+
+    private <T> MobeelizerErrors save(final MobeelizerAndroidModel model, final T entity) {
+        MobeelizerErrorsHolder errors = new MobeelizerErrorsHolder();
         if (model.exists(database, entity)) {
             model.update(database, entity, errors);
         } else {
             model.create(database, entity, application.getUser(), errors);
         }
-
         return errors;
     }
 
@@ -107,8 +113,18 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     @Override
+    public long count(final String model) {
+        return getModel(model).count(database);
+    }
+
+    @Override
     public <T> T get(final Class<T> clazz, final String guid) {
         return getModel(clazz).get(database, guid);
+    }
+
+    @Override
+    public Map<String, Object> getAsMap(final String model, final String guid) {
+        return getModel(model).getAsMap(database, guid);
     }
 
     @Override
@@ -117,9 +133,13 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     @Override
+    public boolean exists(final String model, final String guid) {
+        return getModel(model).exists(database, guid);
+    }
+
+    @Override
     public <T> void delete(final T entity, final T... otherEntities) {
         MobeelizerAndroidModel model = getModel(entity.getClass());
-
         model.delete(database, entity);
         for (T otherEntity : otherEntities) {
             model.delete(database, otherEntity);
@@ -127,11 +147,26 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     @Override
+    public void deleteMap(final Map<String, Object> entity, final Map<String, Object>... otherEntities) {
+        getModelFromMap(entity).delete(database, entity);
+        for (Map<String, Object> otherEntity : otherEntities) {
+            getModelFromMap(otherEntity).delete(database, otherEntity);
+        }
+    }
+
+    @Override
     public <T> void delete(final Class<T> clazz, final String... guids) {
         MobeelizerAndroidModel model = getModel(clazz);
-
         for (String guid : guids) {
             model.deleteByGuid(database, guid);
+        }
+    }
+
+    @Override
+    public void delete(final String model, final String... guids) {
+        MobeelizerAndroidModel androidModel = getModel(model);
+        for (String guid : guids) {
+            androidModel.deleteByGuid(database, guid);
         }
     }
 
@@ -141,13 +176,28 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     @Override
+    public void deleteAll(final String model) {
+        getModel(model).deleteAll(database);
+    }
+
+    @Override
     public <T> List<T> list(final Class<T> clazz) {
         return getModel(clazz).list(database);
     }
 
     @Override
+    public List<Map<String, Object>> listAsMaps(final String model) {
+        return getModel(model).listOfMaps(database);
+    }
+
+    @Override
     public <T> MobeelizerCriteriaBuilder<T> find(final Class<T> clazz) {
         return new MobeelizerCriteriaBuilderImpl<T>(getModel(clazz), database);
+    }
+
+    @Override
+    public MobeelizerCriteriaBuilder<Map<String, Object>> find(final String model) {
+        return new MobeelizerCriteriaBuilderImpl<Map<String, Object>>(getModel(model), database);
     }
 
     @Override
@@ -165,8 +215,19 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
         return modelsByClass.get(clazz);
     }
 
+    private MobeelizerAndroidModel getModelFromMap(final Map<String, Object> entity) {
+        Object modelName = entity.get("model");
+        if (modelName == null) {
+            throw new IllegalStateException("Field 'model' is required");
+        }
+        if (!(modelName instanceof String)) {
+            throw new IllegalStateException("Field 'model' must be string");
+        }
+        return getModel((String) entity.get("model"));
+    }
+
     void lockModifiedFlag() {
-        for (MobeelizerAndroidModel model : modelsByClass.values()) {
+        for (MobeelizerAndroidModel model : modelsByName.values()) {
             model.lockModifiedFlag(database);
         }
 
@@ -176,7 +237,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     void unlockModifiedFlag() {
-        for (MobeelizerAndroidModel model : modelsByClass.values()) {
+        for (MobeelizerAndroidModel model : modelsByName.values()) {
             model.unlockModifiedFlag(database);
         }
 
@@ -186,7 +247,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     void clearModifiedFlag() {
-        for (MobeelizerAndroidModel model : modelsByClass.values()) {
+        for (MobeelizerAndroidModel model : modelsByName.values()) {
             model.clearModifiedFlag(database);
         }
 
@@ -196,7 +257,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     MobeelizerSyncIterator getEntitiesToSync() {
-        return new MobeelizerSyncIterator(database, modelsByClass.values());
+        return new MobeelizerSyncIterator(database, modelsByName.values());
     }
 
     boolean updateEntitiesFromSync(final Iterator<MobeelizerJsonEntity> entities, final boolean clearData) {
@@ -206,7 +267,7 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
         boolean isTransactionSuccessful = true;
 
         if (clearData) {
-            for (MobeelizerAndroidModel model : modelsByClass.values()) {
+            for (MobeelizerAndroidModel model : modelsByName.values()) {
                 model.clearData(localDatabase);
             }
         }
@@ -258,25 +319,18 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     String getFilePath(final String guid) {
         Cursor cursor = database.query(_FILE_TABLE_NAME, new String[] { _FILE_PATH }, _FILE_GUID + " = ?", new String[] { guid },
                 null, null, null);
-
         String path = null;
-
         if (cursor.moveToNext()) {
             path = cursor.getString(cursor.getColumnIndex(_FILE_PATH));
         }
-
         cursor.close();
-
         return path;
     }
 
     boolean isFileExists(final String guid) {
         Cursor cursor = database.query(_FILE_TABLE_NAME, null, _FILE_GUID + " = ?", new String[] { guid }, null, null, null);
-
         boolean exists = cursor.moveToNext();
-
         cursor.close();
-
         return exists;
     }
 

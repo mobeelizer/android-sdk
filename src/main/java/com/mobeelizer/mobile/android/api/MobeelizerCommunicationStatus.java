@@ -39,6 +39,6 @@ public enum MobeelizerCommunicationStatus {
      * 
      * @since 1.0
      */
-    CONNECTION_FAILURE
+    FAILURE
 
 }

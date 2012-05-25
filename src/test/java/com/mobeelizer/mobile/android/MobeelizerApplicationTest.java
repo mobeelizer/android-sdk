@@ -172,7 +172,7 @@ public class MobeelizerApplicationTest {
 
         database = mock(MobeelizerDatabaseImpl.class);
 
-        application = new MobeelizerApplication(mobeelizer);
+        application = MobeelizerApplication.createApplication(mobeelizer);
 
         MobeelizerLoginResponse loginResponse = new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, "0000", "role", false);
 
@@ -192,7 +192,7 @@ public class MobeelizerApplicationTest {
         PowerMockito.when(Environment.class, "getExternalStorageState").thenReturn(Environment.MEDIA_MOUNTED_READ_ONLY);
 
         // when
-        new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication.createApplication(mobeelizer);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -201,7 +201,7 @@ public class MobeelizerApplicationTest {
         PowerMockito.when(Environment.class, "getExternalStorageState").thenReturn(Environment.MEDIA_UNMOUNTED);
 
         // when
-        new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication.createApplication(mobeelizer);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -210,7 +210,7 @@ public class MobeelizerApplicationTest {
         when(bundle.getString("MOBEELIZER_DEVICE")).thenReturn(null);
 
         // when
-        new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication.createApplication(mobeelizer);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -219,7 +219,7 @@ public class MobeelizerApplicationTest {
         when(bundle.getString("MOBEELIZER_PACKAGE")).thenReturn(null);
 
         // when
-        new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication.createApplication(mobeelizer);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -228,7 +228,7 @@ public class MobeelizerApplicationTest {
         when(telephonyManager.getDeviceId()).thenReturn(null);
 
         // when
-        new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication.createApplication(mobeelizer);
     }
 
     @Test
@@ -238,7 +238,7 @@ public class MobeelizerApplicationTest {
         when(assetManager.open("application.xml")).thenReturn(definitionXmlAsset);
 
         // when
-        MobeelizerApplication application = new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication application = MobeelizerApplication.createApplication(mobeelizer);
 
         // then
         assertEquals(definition, application.getDefinition());
@@ -251,7 +251,7 @@ public class MobeelizerApplicationTest {
         when(assetManager.open("application.xml")).thenThrow(new IOException("message"));
 
         // when
-        new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication.createApplication(mobeelizer);
     }
 
     @Test
@@ -260,7 +260,7 @@ public class MobeelizerApplicationTest {
         when(bundle.getString("MOBEELIZER_URL")).thenReturn(null);
 
         // when
-        MobeelizerApplication application = new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication application = MobeelizerApplication.createApplication(mobeelizer);
 
         // then
         assertNull(application.getUrl());
@@ -273,7 +273,7 @@ public class MobeelizerApplicationTest {
         when(bundle.getString("MOBEELIZER_MODE")).thenReturn("test");
 
         // when
-        MobeelizerApplication application = new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication application = MobeelizerApplication.createApplication(mobeelizer);
 
         // then
         assertNull(application.getUrl());
@@ -285,7 +285,7 @@ public class MobeelizerApplicationTest {
         when(bundle.getInt("MOBEELIZER_DB_VERSION", 1)).thenReturn(1);
 
         // when
-        MobeelizerApplication application = new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication application = MobeelizerApplication.createApplication(mobeelizer);
 
         // then
         assertEquals(1, application.getDatabaseVersion());
@@ -303,7 +303,7 @@ public class MobeelizerApplicationTest {
         when(definitionManager.convert(definition, "com.mobeelizer.orm", "devRole")).thenReturn(models);
 
         // when
-        MobeelizerApplication application = new MobeelizerApplication(mobeelizer);
+        MobeelizerApplication application = MobeelizerApplication.createApplication(mobeelizer);
 
         // then
         PowerMockito.whenNew(MobeelizerDatabaseImpl.class).withArguments(eq(application), eq(models)).thenReturn(database);

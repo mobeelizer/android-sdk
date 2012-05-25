@@ -23,6 +23,7 @@ package com.mobeelizer.mobile.android.search;
 import java.util.List;
 
 import com.mobeelizer.mobile.android.api.MobeelizerCriterion;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerNotRestritionImpl implements MobeelizerInternalCriterion {
 
@@ -33,7 +34,7 @@ public class MobeelizerNotRestritionImpl implements MobeelizerInternalCriterion 
     }
 
     @Override
-    public String addToQuery(final List<String> selectionArgs) {
-        return "not (" + ((MobeelizerInternalCriterion) criterion).addToQuery(selectionArgs) + ")";
+    public String addToQuery(final List<String> selectionArgs, final MobeelizerAndroidModel model) {
+        return "not (" + ((MobeelizerInternalCriterion) criterion).addToQuery(selectionArgs, model) + ")";
     }
 }

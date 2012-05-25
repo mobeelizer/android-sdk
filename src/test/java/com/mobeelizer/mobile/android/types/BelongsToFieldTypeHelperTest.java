@@ -50,7 +50,9 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.Mobeelizer;
 import com.mobeelizer.mobile.android.MobeelizerDatabaseImpl;
 import com.mobeelizer.mobile.android.TestEntity;
@@ -60,7 +62,7 @@ import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 @PrepareForTest({ BelongsToFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class, Mobeelizer.class })
 public class BelongsToFieldTypeHelperTest {
 
-    private Field fieldString;
+    private MobeelizerFieldAccessor fieldString;
 
     private MobeelizerDatabaseImpl database;
 
@@ -70,8 +72,8 @@ public class BelongsToFieldTypeHelperTest {
         database = mock(MobeelizerDatabaseImpl.class);
         PowerMockito.when(Mobeelizer.getDatabase()).thenReturn(database);
 
-        fieldString = MobeelizerReflectionUtil.getField(TestEntity.class, "string",
-                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { String.class })));
+        fieldString = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "string",
+                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { String.class }))));
     }
 
     @Test

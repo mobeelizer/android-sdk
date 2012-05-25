@@ -94,10 +94,12 @@ class MobeelizerFileService {
     }
 
     private String savaFile(final String guid, final InputStream stream) {
-        File file = new File(getStorageDirectory(), guid);
+        File dir = getStorageDirectory();
+        File file = new File(dir, guid);
 
         FileOutputStream fos = null;
         try {
+            file.createNewFile();
             fos = new FileOutputStream(file);
 
             byte[] buffer = new byte[4096];

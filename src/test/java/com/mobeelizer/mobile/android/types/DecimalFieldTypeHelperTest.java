@@ -52,32 +52,37 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ DecimalFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class })
 public class DecimalFieldTypeHelperTest {
 
-    private Field fieldDoubleO;
+    private MobeelizerFieldAccessor fieldDoubleO;
 
-    private Field fieldDoubleP;
+    private MobeelizerFieldAccessor fieldDoubleP;
 
-    private Field fieldFloatO;
+    private MobeelizerFieldAccessor fieldFloatO;
 
-    private Field fieldFloatP;
+    private MobeelizerFieldAccessor fieldFloatP;
 
-    private Field fieldBigDecimal;
+    private MobeelizerFieldAccessor fieldBigDecimal;
 
     @Before
     public void init() {
         HashSet<Class<?>> types = new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { Double.class, Double.TYPE, Float.class,
                 Float.TYPE, BigDecimal.class }));
-        fieldDoubleO = MobeelizerReflectionUtil.getField(TestEntity.class, "doubleO", types);
-        fieldDoubleP = MobeelizerReflectionUtil.getField(TestEntity.class, "doubleP", types);
-        fieldFloatO = MobeelizerReflectionUtil.getField(TestEntity.class, "floatO", types);
-        fieldFloatP = MobeelizerReflectionUtil.getField(TestEntity.class, "floatP", types);
-        fieldBigDecimal = MobeelizerReflectionUtil.getField(TestEntity.class, "bigDecimal", types);
+        fieldDoubleO = new ReflectionMobeelizerFieldAccessor(
+                MobeelizerReflectionUtil.getField(TestEntity.class, "doubleO", types));
+        fieldDoubleP = new ReflectionMobeelizerFieldAccessor(
+                MobeelizerReflectionUtil.getField(TestEntity.class, "doubleP", types));
+        fieldFloatO = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "floatO", types));
+        fieldFloatP = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "floatP", types));
+        fieldBigDecimal = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "bigDecimal",
+                types));
     }
 
     @Test
@@ -114,7 +119,8 @@ public class DecimalFieldTypeHelperTest {
         shouldSetValueFromEntityToDatabase(fieldBigDecimal, BigDecimal.valueOf(123), 123.0);
     }
 
-    private void shouldSetValueFromEntityToDatabase(final Field field, final Object entityValue, final Double contentValue) {
+    private void shouldSetValueFromEntityToDatabase(final MobeelizerFieldAccessor field, final Object entityValue,
+            final Double contentValue) {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
@@ -126,8 +132,6 @@ public class DecimalFieldTypeHelperTest {
         try {
             field.set(entity, entityValue);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
 
@@ -282,7 +286,8 @@ public class DecimalFieldTypeHelperTest {
         shouldSetValueFromDatabaseToEntity(fieldBigDecimal, 10.0, BigDecimal.valueOf(10L));
     }
 
-    private void shouldSetValueFromDatabaseToEntity(final Field field, final Double databaseValue, final Object entityValue) {
+    private void shouldSetValueFromDatabaseToEntity(final MobeelizerFieldAccessor field, final Double databaseValue,
+            final Object entityValue) {
         // given
         Map<String, String> options = new HashMap<String, String>();
 
@@ -302,8 +307,6 @@ public class DecimalFieldTypeHelperTest {
             Number numberFieldValue = (Number) field.get(entity);
             assertEquals(numberEntityValue.doubleValue(), numberFieldValue.doubleValue(), 0.01);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException(e.getMessage());
-        } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage());
         }
     }

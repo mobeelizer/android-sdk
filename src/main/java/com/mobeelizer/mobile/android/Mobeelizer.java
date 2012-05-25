@@ -107,7 +107,7 @@ public class Mobeelizer extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        setInstance(new MobeelizerApplication(this));
+        setInstance(MobeelizerApplication.createApplication(this));
     }
 
     static MobeelizerApplication getInstance() {

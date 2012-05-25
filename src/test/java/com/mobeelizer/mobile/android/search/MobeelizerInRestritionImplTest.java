@@ -21,11 +21,15 @@
 package com.mobeelizer.mobile.android.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public class MobeelizerInRestritionImplTest {
 
@@ -39,13 +43,18 @@ public class MobeelizerInRestritionImplTest {
         MobeelizerInRestritionImpl restrition = new MobeelizerInRestritionImpl("field", values);
         List<String> selectionArgs = new ArrayList<String>();
 
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+        when(model.convertToDatabaseValue("field", 1)).thenReturn("1");
+        when(model.convertToDatabaseValue("field", "ala")).thenReturn("ala2");
+
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
-        assertEquals(1, selectionArgs.size());
-        assertEquals("1, ala", selectionArgs.get(0));
-        assertEquals("field in (?)", query);
+        assertEquals(2, selectionArgs.size());
+        assertEquals("1", selectionArgs.get(0));
+        assertEquals("ala2", selectionArgs.get(1));
+        assertEquals("field in (?, ?)", query);
     }
 
     @Test
@@ -56,8 +65,10 @@ public class MobeelizerInRestritionImplTest {
         MobeelizerInRestritionImpl restrition = new MobeelizerInRestritionImpl("field", values);
         List<String> selectionArgs = new ArrayList<String>();
 
+        MobeelizerAndroidModel model = mock(MobeelizerAndroidModel.class);
+
         // when
-        String query = restrition.addToQuery(selectionArgs);
+        String query = restrition.addToQuery(selectionArgs, model);
 
         // then
         assertEquals(0, selectionArgs.size());

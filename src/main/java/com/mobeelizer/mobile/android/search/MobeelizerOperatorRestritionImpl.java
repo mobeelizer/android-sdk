@@ -22,6 +22,8 @@ package com.mobeelizer.mobile.android.search;
 
 import java.util.List;
 
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
+
 public class MobeelizerOperatorRestritionImpl implements MobeelizerInternalCriterion {
 
     private final String field;
@@ -37,9 +39,8 @@ public class MobeelizerOperatorRestritionImpl implements MobeelizerInternalCrite
     }
 
     @Override
-    public String addToQuery(final List<String> selectionArgs) {
-        selectionArgs.add(value.toString());
+    public String addToQuery(final List<String> selectionArgs, final MobeelizerAndroidModel model) {
+        selectionArgs.add(model.convertToDatabaseValue(field, value));
         return field + " " + operator + " ?";
-
     }
 }

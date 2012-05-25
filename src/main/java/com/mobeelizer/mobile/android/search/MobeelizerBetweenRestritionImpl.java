@@ -22,6 +22,8 @@ package com.mobeelizer.mobile.android.search;
 
 import java.util.List;
 
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
+
 public class MobeelizerBetweenRestritionImpl implements MobeelizerInternalCriterion {
 
     private final String field;
@@ -37,9 +39,9 @@ public class MobeelizerBetweenRestritionImpl implements MobeelizerInternalCriter
     }
 
     @Override
-    public String addToQuery(final List<String> selectionArgs) {
-        selectionArgs.add(lo.toString());
-        selectionArgs.add(hi.toString());
+    public String addToQuery(final List<String> selectionArgs, final MobeelizerAndroidModel model) {
+        selectionArgs.add(model.convertToDatabaseValue(field, lo));
+        selectionArgs.add(model.convertToDatabaseValue(field, hi));
         return field + " between ? and ?";
     }
 }

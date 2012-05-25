@@ -49,23 +49,25 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.TestEntity;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ BooleanFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class })
 public class BooleanFieldTypeHelperTest {
 
-    private Field fieldBooleanP;
+    private MobeelizerFieldAccessor fieldBooleanP;
 
-    private Field fieldBooleanO;
+    private MobeelizerFieldAccessor fieldBooleanO;
 
     @Before
     public void init() {
-        fieldBooleanP = MobeelizerReflectionUtil.getField(TestEntity.class, "booleanP",
-                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { Boolean.class, Boolean.TYPE })));
-        fieldBooleanO = MobeelizerReflectionUtil.getField(TestEntity.class, "booleanO",
-                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { Boolean.class, Boolean.TYPE })));
+        fieldBooleanP = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "booleanP",
+                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { Boolean.class, Boolean.TYPE }))));
+        fieldBooleanO = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "booleanO",
+                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { Boolean.class, Boolean.TYPE }))));
     }
 
     @Test

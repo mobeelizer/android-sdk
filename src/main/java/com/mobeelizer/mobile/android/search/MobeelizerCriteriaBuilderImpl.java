@@ -22,6 +22,7 @@ package com.mobeelizer.mobile.android.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
@@ -71,7 +72,7 @@ public class MobeelizerCriteriaBuilderImpl<T> implements MobeelizerCriteriaBuild
         selectionBuilder.add(MobeelizerAndroidModel._DELETED + " = 0");
 
         for (MobeelizerCriterion criterion : criterions) {
-            selectionBuilder.add(((MobeelizerInternalCriterion) criterion).addToQuery(selectionArgs));
+            selectionBuilder.add(((MobeelizerInternalCriterion) criterion).addToQuery(selectionArgs, model));
         }
 
         for (MobeelizerOrder order : orders) {
@@ -120,15 +121,22 @@ public class MobeelizerCriteriaBuilderImpl<T> implements MobeelizerCriteriaBuild
         // }
 
         Cursor cursor = getCursor();
-
         List<T> entities = new ArrayList<T>();
-
         while (cursor.moveToNext()) {
             entities.add((T) model.getEntity(cursor));
         }
-
         cursor.close();
+        return entities;
+    }
 
+    @Override
+    public List<Map<String, Object>> listAsMaps() {
+        Cursor cursor = getCursor();
+        List<Map<String, Object>> entities = new ArrayList<Map<String, Object>>();
+        while (cursor.moveToNext()) {
+            entities.add(model.getEntityAsMap(cursor));
+        }
+        cursor.close();
         return entities;
     }
 
@@ -191,21 +199,30 @@ public class MobeelizerCriteriaBuilderImpl<T> implements MobeelizerCriteriaBuild
         // }
 
         Cursor cursor = getCursor();
-
         T entity = null;
-
         if (cursor.moveToNext()) {
             entity = (T) model.getEntity(cursor);
         }
-
         boolean tooManyEntities = cursor.moveToNext();
-
         cursor.close();
-
         if (tooManyEntities) {
             throw new IllegalStateException("Query in uniqueResult() has to return single record.");
         }
+        return entity;
+    }
 
+    @Override
+    public Map<String, Object> uniqueResultAsMap() {
+        Cursor cursor = getCursor();
+        Map<String, Object> entity = null;
+        if (cursor.moveToNext()) {
+            entity = model.getEntityAsMap(cursor);
+        }
+        boolean tooManyEntities = cursor.moveToNext();
+        cursor.close();
+        if (tooManyEntities) {
+            throw new IllegalStateException("Query in uniqueResult() has to return single record.");
+        }
         return entity;
     }
 

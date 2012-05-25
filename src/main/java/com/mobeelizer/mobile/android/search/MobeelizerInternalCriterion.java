@@ -23,9 +23,10 @@ package com.mobeelizer.mobile.android.search;
 import java.util.List;
 
 import com.mobeelizer.mobile.android.api.MobeelizerCriterion;
+import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
 
 public interface MobeelizerInternalCriterion extends MobeelizerCriterion {
 
-    String addToQuery(final List<String> selectionArgs);
+    String addToQuery(final List<String> selectionArgs, final MobeelizerAndroidModel model);
 
 }

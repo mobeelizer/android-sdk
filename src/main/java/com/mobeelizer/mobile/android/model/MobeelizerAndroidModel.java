@@ -24,8 +24,8 @@ import static com.mobeelizer.java.model.MobeelizerReflectionUtil.getValue;
 import static com.mobeelizer.java.model.MobeelizerReflectionUtil.setValue;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -34,7 +34,6 @@ import java.util.UUID;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
@@ -63,7 +62,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
     private final String tableName;
 
-    private final Set<MobeelizerAndroidField> fields = new HashSet<MobeelizerAndroidField>();
+    private final Map<String, MobeelizerAndroidField> fields = new HashMap<String, MobeelizerAndroidField>();
 
     private final ContentValues valuesForDelete;
 
@@ -73,10 +72,10 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         this.model = model;
 
         for (MobeelizerField field : this.model.getFields()) {
-            fields.add(new MobeelizerAndroidField((MobeelizerFieldImpl) field));
+            fields.put(field.getName(), new MobeelizerAndroidField((MobeelizerFieldImpl) field));
         }
 
-        tableName = model.getMappingClass().getSimpleName().toLowerCase(Locale.ENGLISH);
+        tableName = model.getName().toLowerCase(Locale.ENGLISH);
         valuesForDelete = new ContentValues();
         valuesForDelete.put(_MODIFIED, 1);
         valuesForDelete.put(_DELETED, 1);
@@ -104,6 +103,16 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     @Override
     public Set<MobeelizerField> getFields() {
         return model.getFields();
+    }
+
+    public String convertToDatabaseValue(final String field, final Object value) {
+        if (value instanceof Boolean) {
+            return (Boolean) value ? "1" : "0";
+        } else if (value instanceof Date) {
+            return ((Date) value).getTime() + "";
+        } else {
+            return value.toString();
+        }
     }
 
     public boolean exists(final SQLiteDatabase database, final String guid) {
@@ -138,7 +147,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         values.put(_DELETED, Integer.valueOf(0));
         values.put(_MODIFIED, Integer.valueOf(1));
 
-        for (MobeelizerAndroidField field : fields) {
+        for (MobeelizerAndroidField field : fields.values()) {
             field.setValueFromEntityToDatabase(values, entity, errors);
         }
 
@@ -162,7 +171,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
         ContentValues values = new ContentValues();
 
-        for (MobeelizerAndroidField field : fields) {
+        for (MobeelizerAndroidField field : fields.values()) {
             field.setValueFromEntityToDatabase(values, entity, errors);
         }
 
@@ -179,31 +188,47 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
     public <T> T get(final SQLiteDatabase database, final String guid) {
         Cursor cursor = getByGuid(database, guid);
-
         T entity = null;
-
         if (cursor.moveToNext()) {
             entity = getEntity(cursor);
         }
-
         cursor.close();
+        return entity;
+    }
 
+    public Map<String, Object> getAsMap(final SQLiteDatabase database, final String guid) {
+        Cursor cursor = getByGuid(database, guid);
+        Map<String, Object> entity = null;
+        if (cursor.moveToNext()) {
+            entity = getEntityAsMap(cursor);
+        }
+        cursor.close();
         return entity;
     }
 
     @SuppressWarnings("unchecked")
     public <T> List<T> list(final SQLiteDatabase database) {
-        Cursor cursor = database.query(tableName, null, _DELETED + " = 0", null, null, null, null);
-
+        Cursor cursor = getListCursor(database);
         List<T> entities = new ArrayList<T>();
-
         while (cursor.moveToNext()) {
             entities.add((T) getEntity(cursor));
         }
-
         cursor.close();
-
         return entities;
+    }
+
+    public List<Map<String, Object>> listOfMaps(final SQLiteDatabase database) {
+        Cursor cursor = getListCursor(database);
+        List<Map<String, Object>> entities = new ArrayList<Map<String, Object>>();
+        while (cursor.moveToNext()) {
+            entities.add(getEntityAsMap(cursor));
+        }
+        cursor.close();
+        return entities;
+    }
+
+    private Cursor getListCursor(final SQLiteDatabase database) {
+        return database.query(tableName, null, _DELETED + " = 0", null, null, null, null);
     }
 
     public <T> void delete(final SQLiteDatabase database, final T entity) {
@@ -228,7 +253,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         sql.append(_MODIFIED).append(" INTEGER(1) NOT NULL DEFAULT 0").append(", ");
         sql.append(_CONFLICTED).append(" INTEGER(1) NOT NULL DEFAULT 0");
 
-        for (MobeelizerAndroidField field : fields) {
+        for (MobeelizerAndroidField field : fields.values()) {
             for (String definition : field.getDefinition()) {
                 sql.append(", ").append(definition);
             }
@@ -250,7 +275,13 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     }
 
     public long count(final SQLiteDatabase database) {
-        return DatabaseUtils.queryNumEntries(database, tableName);
+        Cursor cursor = database.query(tableName, new String[] { "count(*)" }, _DELETED + " = 0", null, null, null, null);
+        long count = 0;
+        if (cursor.moveToNext()) {
+            count = cursor.getLong(0);
+        }
+        cursor.close();
+        return count;
     }
 
     private <T> Cursor getByGuid(final SQLiteDatabase database, final String guid) {
@@ -261,39 +292,50 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         return database.query(tableName, null, _GUID + " = ?", new String[] { guid }, null, null, null);
     }
 
-    @SuppressWarnings("unchecked")
+    public Map<String, Object> getEntityAsMap(final Cursor cursor) {
+        Map<String, Object> entity = new HashMap<String, Object>();
+        fillEntity(entity, cursor);
+        entity.put("model", getName());
+        return entity;
+    }
+
     public <T> T getEntity(final Cursor cursor) {
         try {
+            @SuppressWarnings("unchecked")
             T entity = (T) model.getMappingClass().newInstance();
-
-            setValue(model.getGuidField(), entity, cursor.getString(cursor.getColumnIndex(_GUID)));
-
-            if (model.getOwnerField() != null) {
-                setValue(model.getOwnerField(), entity, cursor.getString(cursor.getColumnIndex(_OWNER)));
-            }
-
-            if (model.getConflictedField() != null) {
-                setValue(model.getConflictedField(), entity, cursor.getInt(cursor.getColumnIndex(_CONFLICTED)) == 1);
-            }
-
-            if (model.getModifiedField() != null) {
-                setValue(model.getModifiedField(), entity, cursor.getInt(cursor.getColumnIndex(_MODIFIED)) != 0);
-            }
-
-            if (model.getDeletedField() != null) {
-                setValue(model.getDeletedField(), entity, cursor.getInt(cursor.getColumnIndex(_DELETED)) == 1);
-            }
-
-            for (MobeelizerAndroidField field : fields) {
-                field.setValueFromDatabaseToEntity(cursor, entity);
-            }
-
+            fillEntity(entity, cursor);
             return entity;
         } catch (InstantiationException e) {
             throw new IllegalStateException(e.getMessage(), e);
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    private <T> T fillEntity(final T entity, final Cursor cursor) {
+        setValue(model.getGuidField(), entity, cursor.getString(cursor.getColumnIndex(_GUID)));
+
+        if (model.getOwnerField() != null) {
+            setValue(model.getOwnerField(), entity, cursor.getString(cursor.getColumnIndex(_OWNER)));
+        }
+
+        if (model.getConflictedField() != null) {
+            setValue(model.getConflictedField(), entity, cursor.getInt(cursor.getColumnIndex(_CONFLICTED)) == 1);
+        }
+
+        if (model.getModifiedField() != null) {
+            setValue(model.getModifiedField(), entity, cursor.getInt(cursor.getColumnIndex(_MODIFIED)) != 0);
+        }
+
+        if (model.getDeletedField() != null) {
+            setValue(model.getDeletedField(), entity, cursor.getInt(cursor.getColumnIndex(_DELETED)) == 1);
+        }
+
+        for (MobeelizerAndroidField field : fields.values()) {
+            field.setValueFromDatabaseToEntity(cursor, entity);
+        }
+
+        return entity;
     }
 
     public void lockModifiedFlag(final SQLiteDatabase database) {
@@ -329,7 +371,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         Map<String, String> values = new HashMap<String, String>();
         values.put("s_deleted", Boolean.toString(cursor.getInt(cursor.getColumnIndex(_DELETED)) == 1));
 
-        for (MobeelizerAndroidField field : fields) {
+        for (MobeelizerAndroidField field : fields.values()) {
             field.setValueFromDatabaseToMap(cursor, values);
         }
         entity.setFields(values);
@@ -375,7 +417,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
         MobeelizerErrorsHolder errors = new MobeelizerErrorsHolder();
 
-        for (MobeelizerAndroidField field : fields) {
+        for (MobeelizerAndroidField field : fields.values()) {
             field.setValueFromMapToDatabase(values, entity.getFields(), errors);
         }
 

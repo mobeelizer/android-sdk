@@ -50,7 +50,9 @@ import android.database.DatabaseUtils;
 
 import com.mobeelizer.java.api.MobeelizerFile;
 import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
+import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.MobeelizerFileImpl;
 import com.mobeelizer.mobile.android.TestEntity;
 
@@ -58,7 +60,7 @@ import com.mobeelizer.mobile.android.TestEntity;
 @PrepareForTest({ FileFieldTypeHelper.class, ContentValues.class, DatabaseUtils.class, MobeelizerFileImpl.class })
 public class FileFieldTypeHelperTest {
 
-    private Field fieldFile;
+    private MobeelizerFieldAccessor fieldFile;
 
     private MobeelizerFile file;
 
@@ -68,8 +70,8 @@ public class FileFieldTypeHelperTest {
         when(file.getGuid()).thenReturn("guid");
         when(file.getName()).thenReturn("name");
 
-        fieldFile = MobeelizerReflectionUtil.getField(TestEntity.class, "file",
-                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { MobeelizerFile.class })));
+        fieldFile = new ReflectionMobeelizerFieldAccessor(MobeelizerReflectionUtil.getField(TestEntity.class, "file",
+                new HashSet<Class<?>>(Arrays.asList(new Class<?>[] { MobeelizerFile.class }))));
     }
 
     @Test
