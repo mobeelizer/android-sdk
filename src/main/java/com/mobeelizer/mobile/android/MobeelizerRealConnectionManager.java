@@ -203,7 +203,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
     @Override
     public boolean waitUntilSyncRequestComplete(final String ticket) throws ConnectionException {
         try {
-            return connectionService.waitUntilSyncRequestComplete(ticket);
+            return connectionService.waitUntilSyncRequestComplete(ticket).isSuccess();
         } catch (IOException e) {
             throw new ConnectionException(e.getMessage(), e);
         }
