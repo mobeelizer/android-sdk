@@ -450,6 +450,7 @@ public class MobeelizerApplication {
     public MobeelizerCommunicationStatus sendRemoteNotification(final String device, final String group,
             final List<String> users, final Map<String, String> notification) {
         try {
+            checkIfLoggedIn();
             connectionManager.sendRemoteNotification(device, group, users, notification);
             return MobeelizerCommunicationStatus.SUCCESS;
         } catch (ConnectionException e) {
