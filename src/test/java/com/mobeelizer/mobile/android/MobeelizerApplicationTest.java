@@ -59,7 +59,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerModel;
-import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
 import com.mobeelizer.java.definition.MobeelizerApplicationDefinition;
 import com.mobeelizer.java.definition.MobeelizerDefinitionConverter;
 import com.mobeelizer.java.definition.MobeelizerDefinitionParser;
@@ -68,8 +67,7 @@ import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerApplication.class, Bundle.class, AssetManager.class, MobeelizerDefinitionParser.class, Log.class,
-        Environment.class, MobeelizerSyncServicePerformer.class, MobeelizerConnectionServiceImpl.class,
-        MobeelizerDefinitionConverter.class })
+        Environment.class, MobeelizerSyncServicePerformer.class, MobeelizerDefinitionConverter.class })
 public class MobeelizerApplicationTest {
 
     private MobeelizerApplication application;
