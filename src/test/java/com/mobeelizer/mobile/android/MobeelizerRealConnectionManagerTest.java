@@ -58,7 +58,7 @@ import android.util.Log;
 import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
 import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 
-// TODO mina fix test
+// TODO MASZ fix test
 @Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerRealConnectionManager.class, Log.class, DefaultHttpClient.class, HttpGet.class, HttpPost.class,
@@ -99,7 +99,8 @@ public class MobeelizerRealConnectionManagerTest {
         PowerMockito.when(Proxy.class, "getPort", any(Context.class)).thenReturn(-1);
 
         httpClient = PowerMockito.mock(DefaultHttpClient.class);
-        whenNew(DefaultHttpClient.class).withArguments(any(BasicHttpParams.class)).thenReturn(httpClient);
+        whenNew(DefaultHttpClient.class).withArguments(any(ClientConnectionManager.class), any(BasicHttpParams.class))
+                .thenReturn(httpClient);
 
         httpConnectionManager = PowerMockito.mock(ClientConnectionManager.class);
         when(httpClient.getConnectionManager()).thenReturn(httpConnectionManager);
