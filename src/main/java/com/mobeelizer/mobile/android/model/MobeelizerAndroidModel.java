@@ -37,6 +37,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.mobeelizer.java.api.MobeelizerCredential;
 import com.mobeelizer.java.api.MobeelizerField;
 import com.mobeelizer.java.api.MobeelizerModel;
 import com.mobeelizer.java.api.MobeelizerModelCredentials;
@@ -232,6 +233,15 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     }
 
     public <T> void delete(final SQLiteDatabase database, final T entity) {
+
+        Cursor cursor = getByGuid(database, guid);
+        T entity = null;
+        if (cursor.moveToNext()) {
+            entity = getEntity(cursor);
+        }
+        cursor.close();
+        MobeelizerCredential credential = model.getCredentials().getDeleteAllowed();
+
         database.update(tableName, valuesForDelete, _GUID + " = ? AND " + _DELETED + " = 0",
                 new String[] { (String) getValue(model.getGuidField(), entity) });
     }
