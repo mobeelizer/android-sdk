@@ -84,4 +84,11 @@ public class MobeelizerAndroidField implements MobeelizerField {
         type.setValueFromMapToDatabase(values, map, field.getField(), field.isRequired(), field.getOptions(), builder);
     }
 
+    public <T> boolean hasSameValues(final T entity1, final T entity2) {
+        return type.hasSameValues(entity1, entity2, field.getField());
+    }
+
+    public <T> boolean hasNullOrDefaultValue(final T entity) {
+        return type.hasNullOrDefaultValue(entity, field.getField(), field.getDefaultValue());
+    }
 }

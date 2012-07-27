@@ -71,4 +71,12 @@ public enum FieldType {
         helper.setValueFromMapToDatabase(values, map, field, required, options, errors);
     }
 
+    public <T> boolean hasSameValues(final T entity1, final T entity2, final MobeelizerFieldAccessor field) {
+        return helper.hasSameValues(entity1, entity2, field);
+    }
+
+    public <T> boolean hasNullOrDefaultValue(final T entity, final MobeelizerFieldAccessor field, final Object defaultValue) {
+        return helper.hasNullOrDefaultValue(entity, field, defaultValue);
+    }
+
 }

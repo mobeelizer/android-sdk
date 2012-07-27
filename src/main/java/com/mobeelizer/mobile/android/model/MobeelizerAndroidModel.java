@@ -143,7 +143,10 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     public <T> void create(final SQLiteDatabase database, final T entity, final String owner, final String group,
             final MobeelizerDatabaseExceptionBuilder builder) {
 
-        // TODO MINA check if can create model
+        MobeelizerCredential createCredentials = model.getCredentials().getCreateAllowed();
+        if ((createCredentials == MobeelizerCredential.NONE)) {
+            builder.addNoCredentialsToPerformOperationOnModel("create");
+        }
 
         String guid = UUID.randomUUID().toString();
 
@@ -167,7 +170,9 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         values.put(_MODIFIED, Integer.valueOf(1));
 
         for (MobeelizerAndroidField field : fields.values()) {
-            // TODO MINA check if can write field
+            if (!field.hasNullOrDefaultValue(entity) && !checkCredential(field.getCredentials().getCreateAllowed(), owner, group)) {
+                builder.addNoCredentialsToPerformOperationOnField(field.getName(), "create");
+            }
             field.setValueFromEntityToDatabase(values, entity, builder);
         }
 
@@ -192,14 +197,29 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
     public <T> void update(final SQLiteDatabase database, final T entity, final MobeelizerDatabaseExceptionBuilder builder) {
 
-        // TODO MINA check if can update
-
         String guid = (String) getValue(model.getGuidField(), entity);
+        Cursor cursor = getByGuid(database, guid);
+        if (!cursor.moveToNext()) {
+            throw new IllegalStateException("Entity doesn't exists");
+        }
+
+        MobeelizerCredential updateCredentials = model.getCredentials().getUpdateAllowed();
+        String owner = cursor.getString(cursor.getColumnIndex(_OWNER));
+        String group = cursor.getString(cursor.getColumnIndex(_GROUP));
+
+        if (!checkCredential(updateCredentials, owner, group)) {
+            builder.addNoCredentialsToPerformOperationOnModel("update");
+        }
+        T oldEntity = getEntity(cursor);
+        cursor.close();
 
         ContentValues values = new ContentValues();
 
         for (MobeelizerAndroidField field : fields.values()) {
-            // TODO MINA check if can write field
+            if (!field.hasSameValues(oldEntity, entity)
+                    && !checkCredential(field.getCredentials().getUpdateAllowed(), owner, group)) {
+                builder.addNoCredentialsToPerformOperationOnField(field.getName(), "update");
+            }
             field.setValueFromEntityToDatabase(values, entity, builder);
         }
 
@@ -275,28 +295,32 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
             throws MobeelizerDatabaseException {
         Cursor cursor = getByGuid(database, guid);
         if (cursor.moveToNext()) {
-            String owner = cursor.getString(cursor.getColumnIndex(_OWNER));
-            String group = cursor.getString(cursor.getColumnIndex(_GROUP));
-
-            MobeelizerCredential deleteCredential = model.getCredentials().getDeleteAllowed();
-
-            if (deleteCredential == MobeelizerCredential.NONE
-                    || (deleteCredential == MobeelizerCredential.OWN && !owner.equals(currentUser))
-                    || (deleteCredential == MobeelizerCredential.GROUP && !group.equals(currentGroup))) {
-
-                builder.addNoCredentialsToPerformThisOperationOnModel("delete");
-            }
-
-            database.update(tableName, valuesForDelete, _GUID + " = ? AND " + _DELETED + " = 0", new String[] { guid });
+            deleteFromCursor(database, cursor, builder);
         }
         cursor.close();
     }
 
     public void deleteAll(final SQLiteDatabase database, final MobeelizerDatabaseExceptionBuilder builder)
             throws MobeelizerDatabaseException {
-        // TODO MINA check delete permissions for all
+        Cursor cursor = getListCursor(database);
+        while (cursor.moveToNext()) {
+            deleteFromCursor(database, cursor, builder);
+        }
+        cursor.close();
+    }
 
-        database.update(tableName, valuesForDelete, _DELETED + " = 0", null);
+    private void deleteFromCursor(final SQLiteDatabase database, final Cursor cursor,
+            final MobeelizerDatabaseExceptionBuilder builder) {
+        String owner = cursor.getString(cursor.getColumnIndex(_OWNER));
+        String group = cursor.getString(cursor.getColumnIndex(_GROUP));
+        String guid = cursor.getString(cursor.getColumnIndex(_GUID));
+
+        MobeelizerCredential deleteCredential = model.getCredentials().getDeleteAllowed();
+        if (!checkCredential(deleteCredential, owner, group)) {
+            builder.addNoCredentialsToPerformOperationOnModel("delete");
+        }
+
+        database.update(tableName, valuesForDelete, _GUID + " = ? AND " + _DELETED + " = 0", new String[] { guid });
     }
 
     public void onCreate(final SQLiteDatabase database) {
@@ -349,7 +373,9 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     }
 
     public Map<String, Object> getEntityAsMap(final Cursor cursor) {
-        // TODO MINA return null if can't read entity
+        if (!hasReadPermission(cursor)) {
+            return null;
+        }
         Map<String, Object> entity = new HashMap<String, Object>();
         fillEntity(entity, cursor);
         entity.put("model", getName());
@@ -358,7 +384,9 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
     public <T> T getEntity(final Cursor cursor) {
         try {
-            // TODO return null if can't read entity
+            if (!hasReadPermission(cursor)) {
+                return null;
+            }
             @SuppressWarnings("unchecked")
             T entity = (T) model.getMappingClass().newInstance();
             fillEntity(entity, cursor);
@@ -370,15 +398,30 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         }
     }
 
+    private boolean hasReadPermission(final Cursor cursor) {
+        String owner = cursor.getString(cursor.getColumnIndex(_OWNER));
+        String group = cursor.getString(cursor.getColumnIndex(_GROUP));
+        MobeelizerCredential readCredential = model.getCredentials().getReadAllowed();
+        return checkCredential(readCredential, owner, group);
+    }
+
+    private boolean checkCredential(final MobeelizerCredential credentials, final String owner, final String group) {
+        return credentials == MobeelizerCredential.ALL
+                || (credentials == MobeelizerCredential.GROUP && group.equals(currentGroup))
+                || (credentials == MobeelizerCredential.OWN && owner.equals(currentUser));
+    }
+
     private <T> T fillEntity(final T entity, final Cursor cursor) {
         setValue(model.getGuidField(), entity, cursor.getString(cursor.getColumnIndex(_GUID)));
+        String owner = cursor.getString(cursor.getColumnIndex(_OWNER));
+        String group = cursor.getString(cursor.getColumnIndex(_GROUP));
 
         if (model.getOwnerField() != null) {
-            setValue(model.getOwnerField(), entity, cursor.getString(cursor.getColumnIndex(_OWNER)));
+            setValue(model.getOwnerField(), entity, owner);
         }
 
         if (model.getGroupField() != null) {
-            setValue(model.getGroupField(), entity, cursor.getString(cursor.getColumnIndex(_GROUP)));
+            setValue(model.getGroupField(), entity, group);
         }
 
         if (model.getConflictedField() != null) {
@@ -394,8 +437,9 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         }
 
         for (MobeelizerAndroidField field : fields.values()) {
-            // TODO MINA filter fields by read permission
-            field.setValueFromDatabaseToEntity(cursor, entity);
+            if (checkCredential(field.getCredentials().getReadAllowed(), owner, group)) {
+                field.setValueFromDatabaseToEntity(cursor, entity);
+            }
         }
 
         return entity;

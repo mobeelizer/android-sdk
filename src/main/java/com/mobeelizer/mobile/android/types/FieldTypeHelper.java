@@ -142,6 +142,27 @@ public abstract class FieldTypeHelper {
         }
     }
 
+    public <T> boolean hasSameValues(final T entity1, final T entity2, final MobeelizerFieldAccessor field) {
+        Object value1 = getValue(field, entity1);
+        Object value2 = getValue(field, entity2);
+        if (value1 == null) {
+            return value2 == null;
+        } else {
+            return value1.equals(value2);
+        }
+    }
+
+    public <T> boolean hasNullOrDefaultValue(final T entity, final MobeelizerFieldAccessor field, final Object defaultValue) {
+        Object value = getValue(field, entity);
+        if (value == null) {
+            return true;
+        }
+        if (defaultValue == null) {
+            return false;
+        }
+        return value.toString().equals(defaultValue.toString());
+    }
+
     protected abstract void setNotNullValueFromMapToDatabase(final ContentValues values, final String value,
             final MobeelizerFieldAccessor field, final Map<String, String> options,
             final MobeelizerDatabaseExceptionBuilder errors);
