@@ -27,8 +27,7 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.java.api.MobeelizerErrors;
-import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 
@@ -53,10 +52,11 @@ public class TextFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value,
-            final MobeelizerFieldAccessor field, final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+            final MobeelizerFieldAccessor field, final Map<String, String> options,
+            final MobeelizerDatabaseExceptionBuilder errors) {
         String stringValue = (String) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
 
-        if (!errors.isValid()) {
+        if (!errors.hasNoErrors()) {
             return;
         }
 
@@ -65,7 +65,7 @@ public class TextFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNullValueFromEntityToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerErrors errors) {
+            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
         values.put(field.getName(), (String) null);
     }
 
@@ -83,13 +83,14 @@ public class TextFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNotNullValueFromMapToDatabase(final ContentValues values, final String value,
-            final MobeelizerFieldAccessor field, final Map<String, String> options, final MobeelizerErrors errors) {
+            final MobeelizerFieldAccessor field, final Map<String, String> options,
+            final MobeelizerDatabaseExceptionBuilder errors) {
         values.put(field.getName(), value);
     }
 
     @Override
     protected void setNullValueFromMapToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerErrors errors) {
+            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
         values.put(field.getName(), (String) null);
     }
 

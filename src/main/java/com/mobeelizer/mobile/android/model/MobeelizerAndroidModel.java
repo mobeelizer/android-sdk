@@ -38,10 +38,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerCredential;
+import com.mobeelizer.java.api.MobeelizerDatabaseException;
+import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.api.MobeelizerField;
 import com.mobeelizer.java.api.MobeelizerModel;
 import com.mobeelizer.java.api.MobeelizerModelCredentials;
-import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
 import com.mobeelizer.java.model.MobeelizerFieldImpl;
 import com.mobeelizer.java.model.MobeelizerModelImpl;
 import com.mobeelizer.java.sync.MobeelizerJsonEntity;
@@ -54,6 +55,8 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     public static final String _GUID = "_guid";
 
     public static final String _OWNER = "_owner";
+
+    public static final String _GROUP = "_group";
 
     public static final String _DELETED = "_deleted";
 
@@ -69,8 +72,14 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
     private final MobeelizerModelImpl model;
 
-    public MobeelizerAndroidModel(final MobeelizerModelImpl model) {
+    private final String currentUser;
+
+    private final String currentGroup;
+
+    public MobeelizerAndroidModel(final MobeelizerModelImpl model, final String currentUser, final String currentGroup) {
         this.model = model;
+        this.currentUser = currentUser;
+        this.currentGroup = currentGroup;
 
         for (MobeelizerField field : this.model.getFields()) {
             fields.put(field.getName(), new MobeelizerAndroidField((MobeelizerFieldImpl) field));
@@ -131,7 +140,11 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         return guid != null && exists(database, guid);
     }
 
-    public <T> void create(final SQLiteDatabase database, final T entity, final String owner, final MobeelizerErrorsHolder errors) {
+    public <T> void create(final SQLiteDatabase database, final T entity, final String owner, final String group,
+            final MobeelizerDatabaseExceptionBuilder builder) {
+
+        // TODO MINA check if can create model
+
         String guid = UUID.randomUUID().toString();
 
         ContentValues values = new ContentValues();
@@ -142,17 +155,23 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
             setValue(model.getOwnerField(), entity, owner);
         }
 
+        if (model.getGroupField() != null) {
+            setValue(model.getGroupField(), entity, group);
+        }
+
         values.put(_GUID, guid);
         values.put(_OWNER, owner);
+        values.put(_GROUP, group);
         values.put(_CONFLICTED, Integer.valueOf(0));
         values.put(_DELETED, Integer.valueOf(0));
         values.put(_MODIFIED, Integer.valueOf(1));
 
         for (MobeelizerAndroidField field : fields.values()) {
-            field.setValueFromEntityToDatabase(values, entity, errors);
+            // TODO MINA check if can write field
+            field.setValueFromEntityToDatabase(values, entity, builder);
         }
 
-        if (errors.isValid()) {
+        if (builder.hasNoErrors()) {
             if (model.getModifiedField() != null) {
                 setValue(model.getModifiedField(), entity, true);
             }
@@ -164,21 +183,29 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
             if (model.getOwnerField() != null) {
                 setValue(model.getOwnerField(), entity, null);
             }
+
+            if (model.getGroupField() != null) {
+                setValue(model.getGroupField(), entity, null);
+            }
         }
     }
 
-    public <T> void update(final SQLiteDatabase database, final T entity, final MobeelizerErrorsHolder errors) {
+    public <T> void update(final SQLiteDatabase database, final T entity, final MobeelizerDatabaseExceptionBuilder builder) {
+
+        // TODO MINA check if can update
+
         String guid = (String) getValue(model.getGuidField(), entity);
 
         ContentValues values = new ContentValues();
 
         for (MobeelizerAndroidField field : fields.values()) {
-            field.setValueFromEntityToDatabase(values, entity, errors);
+            // TODO MINA check if can write field
+            field.setValueFromEntityToDatabase(values, entity, builder);
         }
 
         values.put(_MODIFIED, Integer.valueOf(1));
 
-        if (errors.isValid()) {
+        if (builder.hasNoErrors()) {
             updateEntity(database, values, guid);
 
             if (model.getModifiedField() != null) {
@@ -212,7 +239,10 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         Cursor cursor = getListCursor(database);
         List<T> entities = new ArrayList<T>();
         while (cursor.moveToNext()) {
-            entities.add((T) getEntity(cursor));
+            T entity = (T) getEntity(cursor);
+            if (entity != null) {
+                entities.add(entity);
+            }
         }
         cursor.close();
         return entities;
@@ -222,7 +252,10 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         Cursor cursor = getListCursor(database);
         List<Map<String, Object>> entities = new ArrayList<Map<String, Object>>();
         while (cursor.moveToNext()) {
-            entities.add(getEntityAsMap(cursor));
+            Map<String, Object> entity = getEntityAsMap(cursor);
+            if (entity != null) {
+                entities.add(entity);
+            }
         }
         cursor.close();
         return entities;
@@ -232,25 +265,37 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         return database.query(tableName, null, _DELETED + " = 0", null, null, null, null);
     }
 
-    public <T> void delete(final SQLiteDatabase database, final T entity) {
+    public <T> void delete(final SQLiteDatabase database, final T entity, final MobeelizerDatabaseExceptionBuilder builder)
+            throws MobeelizerDatabaseException {
+        String guid = (String) getValue(model.getGuidField(), entity);
+        deleteByGuid(database, guid, builder);
+    }
 
+    public void deleteByGuid(final SQLiteDatabase database, final String guid, final MobeelizerDatabaseExceptionBuilder builder)
+            throws MobeelizerDatabaseException {
         Cursor cursor = getByGuid(database, guid);
-        T entity = null;
         if (cursor.moveToNext()) {
-            entity = getEntity(cursor);
+            String owner = cursor.getString(cursor.getColumnIndex(_OWNER));
+            String group = cursor.getString(cursor.getColumnIndex(_GROUP));
+
+            MobeelizerCredential deleteCredential = model.getCredentials().getDeleteAllowed();
+
+            if (deleteCredential == MobeelizerCredential.NONE
+                    || (deleteCredential == MobeelizerCredential.OWN && !owner.equals(currentUser))
+                    || (deleteCredential == MobeelizerCredential.GROUP && !group.equals(currentGroup))) {
+
+                builder.addNoCredentialsToPerformThisOperationOnModel("delete");
+            }
+
+            database.update(tableName, valuesForDelete, _GUID + " = ? AND " + _DELETED + " = 0", new String[] { guid });
         }
         cursor.close();
-        MobeelizerCredential credential = model.getCredentials().getDeleteAllowed();
-
-        database.update(tableName, valuesForDelete, _GUID + " = ? AND " + _DELETED + " = 0",
-                new String[] { (String) getValue(model.getGuidField(), entity) });
     }
 
-    public void deleteByGuid(final SQLiteDatabase database, final String guid) {
-        database.update(tableName, valuesForDelete, _GUID + " = ? AND " + _DELETED + " = 0", new String[] { guid });
-    }
+    public void deleteAll(final SQLiteDatabase database, final MobeelizerDatabaseExceptionBuilder builder)
+            throws MobeelizerDatabaseException {
+        // TODO MINA check delete permissions for all
 
-    public void deleteAll(final SQLiteDatabase database) {
         database.update(tableName, valuesForDelete, _DELETED + " = 0", null);
     }
 
@@ -259,6 +304,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         sql.append("CREATE TABLE ").append(tableName).append(" (");
         sql.append(_GUID).append(" TEXT(36) PRIMARY KEY").append(", ");
         sql.append(_OWNER).append(" TEXT(255) NOT NULL").append(", ");
+        sql.append(_GROUP).append(" TEXT(255) NOT NULL").append(", ");
         sql.append(_DELETED).append(" INTEGER(1) NOT NULL DEFAULT 0").append(", ");
         sql.append(_MODIFIED).append(" INTEGER(1) NOT NULL DEFAULT 0").append(", ");
         sql.append(_CONFLICTED).append(" INTEGER(1) NOT NULL DEFAULT 0");
@@ -303,6 +349,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     }
 
     public Map<String, Object> getEntityAsMap(final Cursor cursor) {
+        // TODO MINA return null if can't read entity
         Map<String, Object> entity = new HashMap<String, Object>();
         fillEntity(entity, cursor);
         entity.put("model", getName());
@@ -311,6 +358,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
     public <T> T getEntity(final Cursor cursor) {
         try {
+            // TODO return null if can't read entity
             @SuppressWarnings("unchecked")
             T entity = (T) model.getMappingClass().newInstance();
             fillEntity(entity, cursor);
@@ -329,6 +377,10 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
             setValue(model.getOwnerField(), entity, cursor.getString(cursor.getColumnIndex(_OWNER)));
         }
 
+        if (model.getGroupField() != null) {
+            setValue(model.getGroupField(), entity, cursor.getString(cursor.getColumnIndex(_GROUP)));
+        }
+
         if (model.getConflictedField() != null) {
             setValue(model.getConflictedField(), entity, cursor.getInt(cursor.getColumnIndex(_CONFLICTED)) == 1);
         }
@@ -342,6 +394,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         }
 
         for (MobeelizerAndroidField field : fields.values()) {
+            // TODO MINA filter fields by read permission
             field.setValueFromDatabaseToEntity(cursor, entity);
         }
 
@@ -377,6 +430,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         entity.setModel(model.getName());
         entity.setGuid(cursor.getString(cursor.getColumnIndex(_GUID)));
         entity.setOwner(cursor.getString(cursor.getColumnIndex(_OWNER)));
+        entity.setGroup(cursor.getString(cursor.getColumnIndex(_GROUP)));
 
         Map<String, String> values = new HashMap<String, String>();
         values.put("s_deleted", Boolean.toString(cursor.getInt(cursor.getColumnIndex(_DELETED)) == 1));
@@ -422,16 +476,17 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         }
 
         values.put(_OWNER, entity.getOwner());
+        values.put(_GROUP, entity.getGroup());
         values.put(_MODIFIED, Integer.valueOf(0));
         values.put(_DELETED, Integer.valueOf(entity.isDeleted() ? 1 : 0));
 
-        MobeelizerErrorsHolder errors = new MobeelizerErrorsHolder();
+        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
 
         for (MobeelizerAndroidField field : fields.values()) {
-            field.setValueFromMapToDatabase(values, entity.getFields(), errors);
+            field.setValueFromMapToDatabase(values, entity.getFields(), builder);
         }
 
-        if (!errors.isValid()) {
+        if (!builder.hasNoErrors()) {
             return false;
         }
 

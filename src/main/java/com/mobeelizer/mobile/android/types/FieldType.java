@@ -25,7 +25,7 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 
@@ -46,7 +46,7 @@ public enum FieldType {
     }
 
     public <T> void setValueFromEntityToDatabase(final ContentValues values, final T entity, final MobeelizerFieldAccessor field,
-            final boolean required, final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+            final boolean required, final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
         helper.setValueFromEntityToDatabase(values, entity, field, required, options, errors);
     }
 
@@ -67,7 +67,7 @@ public enum FieldType {
 
     public void setValueFromMapToDatabase(final ContentValues values, final Map<String, String> map,
             final MobeelizerFieldAccessor field, final boolean required, final Map<String, String> options,
-            final MobeelizerErrorsHolder errors) {
+            final MobeelizerDatabaseExceptionBuilder errors) {
         helper.setValueFromMapToDatabase(values, map, field, required, options, errors);
     }
 

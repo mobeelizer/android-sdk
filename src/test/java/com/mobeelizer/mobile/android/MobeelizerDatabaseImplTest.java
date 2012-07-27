@@ -52,8 +52,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.api.MobeelizerModel;
-import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
 import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.mobile.android.api.MobeelizerCriteriaBuilder;
 import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
@@ -61,7 +61,7 @@ import com.mobeelizer.mobile.android.search.MobeelizerCriteriaBuilderImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerDatabaseImpl.class, MobeelizerSyncIterator.class, ContentValues.class,
-        MobeelizerCriteriaBuilderImpl.class, MobeelizerSyncFileIterator.class })
+        MobeelizerCriteriaBuilderImpl.class, MobeelizerSyncFileIterator.class, MobeelizerDatabaseExceptionBuilder.class })
 public class MobeelizerDatabaseImplTest {
 
     private MobeelizerDatabaseImpl databaseAdapter;
@@ -82,14 +82,20 @@ public class MobeelizerDatabaseImplTest {
 
     private ContentValues contentValues;
 
+    private MobeelizerDatabaseExceptionBuilder exceptionBuilder;
+
     @Before
     @SuppressWarnings({ "unchecked" })
     public void init() throws Exception {
         MobeelizerApplication application = mock(MobeelizerApplication.class);
         when(application.getUser()).thenReturn("owner");
+        when(application.getGroup()).thenReturn("group");
 
         contentValues = PowerMockito.mock(ContentValues.class);
         PowerMockito.whenNew(ContentValues.class).withNoArguments().thenReturn(contentValues);
+
+        exceptionBuilder = mock(MobeelizerDatabaseExceptionBuilder.class);
+        PowerMockito.whenNew(MobeelizerDatabaseExceptionBuilder.class).withNoArguments().thenReturn(exceptionBuilder);
 
         model = mock(MobeelizerAndroidModel.class);
 
@@ -274,10 +280,10 @@ public class MobeelizerDatabaseImplTest {
         when(model.exists(database, entity)).thenReturn(false);
 
         // when
-        MobeelizerErrorsHolder errors = (MobeelizerErrorsHolder) databaseAdapter.save(entity);
+        databaseAdapter.save(entity);
 
         // then
-        verify(model).create(database, entity, "owner", errors);
+        verify(model).create(database, entity, "owner", "group", exceptionBuilder);
     }
 
     @Test
@@ -288,10 +294,10 @@ public class MobeelizerDatabaseImplTest {
         when(model.exists(database, entity)).thenReturn(true);
 
         // when
-        MobeelizerErrorsHolder errors = (MobeelizerErrorsHolder) databaseAdapter.save(entity);
+        databaseAdapter.save(entity);
 
         // then
-        verify(model).update(database, entity, errors);
+        verify(model).update(database, entity, exceptionBuilder);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -313,8 +319,8 @@ public class MobeelizerDatabaseImplTest {
         databaseAdapter.delete(entity1, entity2);
 
         // then
-        verify(model).delete(database, entity1);
-        verify(model).delete(database, entity2);
+        verify(model).delete(database, entity1, exceptionBuilder);
+        verify(model).delete(database, entity2, exceptionBuilder);
     }
 
     @SuppressWarnings("unchecked")
@@ -331,7 +337,7 @@ public class MobeelizerDatabaseImplTest {
         databaseAdapter.deleteAll(clazz);
 
         // then
-        verify(model).deleteAll(database);
+        verify(model).deleteAll(database, exceptionBuilder);
     }
 
     @SuppressWarnings("unchecked")
@@ -348,8 +354,8 @@ public class MobeelizerDatabaseImplTest {
         databaseAdapter.delete(clazz, "guid1", "guid2");
 
         // then
-        verify(model).deleteByGuid(database, "guid1");
-        verify(model).deleteByGuid(database, "guid2");
+        verify(model).deleteByGuid(database, "guid1", exceptionBuilder);
+        verify(model).deleteByGuid(database, "guid2", exceptionBuilder);
     }
 
     @SuppressWarnings("unchecked")

@@ -98,6 +98,8 @@ public class MobeelizerApplication {
 
     private String user;
 
+    private String group;
+
     private String role;
 
     private String instanceGuid;
@@ -293,13 +295,14 @@ public class MobeelizerApplication {
 
         role = status.getRole();
         instanceGuid = status.getInstanceGuid();
+        group = role.split("-")[0];
 
         loggedIn = true;
 
         Set<MobeelizerAndroidModel> androidModels = new HashSet<MobeelizerAndroidModel>();
 
         for (MobeelizerModel model : definitionConverter.convert(definition, entityPackage, role)) {
-            androidModels.add(new MobeelizerAndroidModel((MobeelizerModelImpl) model));
+            androidModels.add(new MobeelizerAndroidModel((MobeelizerModelImpl) model, user, group));
         }
 
         database = new MobeelizerDatabaseImpl(this, androidModels);
@@ -465,6 +468,10 @@ public class MobeelizerApplication {
 
     String getUser() {
         return user;
+    }
+
+    String getGroup() {
+        return group;
     }
 
     String getInstance() {

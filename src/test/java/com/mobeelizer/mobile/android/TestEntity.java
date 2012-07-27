@@ -29,238 +29,248 @@ import com.mobeelizer.java.api.MobeelizerFile;
 
 public class TestEntity {
 
-    private String guid;
+	private String guid;
 
-    private String owner;
+	private String owner;
 
-    private boolean conflicted;
+	private String group;
 
-    private boolean deleted;
+	private boolean conflicted;
 
-    private boolean modified;
+	private boolean deleted;
 
-    private String string;
+	private boolean modified;
 
-    private boolean booleanP;
+	private String string;
 
-    private Boolean booleanO;
+	private boolean booleanP;
 
-    private Integer integerO;
+	private Boolean booleanO;
 
-    private int integerP;
+	private Integer integerO;
 
-    private Short shortO;
+	private int integerP;
 
-    private short shortP;
+	private Short shortO;
 
-    private Long longO;
+	private short shortP;
 
-    private long longP;
+	private Long longO;
 
-    private Byte byteO;
+	private long longP;
 
-    private byte byteP;
+	private Byte byteO;
 
-    private Double doubleO;
+	private byte byteP;
 
-    private double doubleP;
+	private Double doubleO;
 
-    private Float floatO;
+	private double doubleP;
 
-    private float floatP;
+	private Float floatO;
 
-    private BigInteger bigInteger;
+	private float floatP;
 
-    private BigDecimal bigDecimal;
+	private BigInteger bigInteger;
 
-    private Date date;
+	private BigDecimal bigDecimal;
 
-    private Calendar calendar;
+	private Date date;
 
-    private MobeelizerFile file;
+	private Calendar calendar;
 
-    public void setGuid(final String guid) {
-        this.guid = guid;
-    }
+	private MobeelizerFile file;
 
-    public String getGuid() {
-        return guid;
-    }
+	public void setGuid(final String guid) {
+		this.guid = guid;
+	}
 
-    public String getOwner() {
-        return owner;
-    }
+	public String getGuid() {
+		return guid;
+	}
 
-    public boolean isConflicted() {
-        return conflicted;
-    }
+	public String getOwner() {
+		return owner;
+	}
 
-    public boolean isModified() {
-        return modified;
-    }
+	public boolean isConflicted() {
+		return conflicted;
+	}
 
-    public boolean isDeleted() {
-        return deleted;
-    }
+	public boolean isModified() {
+		return modified;
+	}
 
-    public String getString() {
-        return string;
-    }
+	public boolean isDeleted() {
+		return deleted;
+	}
 
-    public void setString(final String string) {
-        this.string = string;
-    }
+	public String getString() {
+		return string;
+	}
 
-    public boolean isBooleanP() {
-        return booleanP;
-    }
+	public void setString(final String string) {
+		this.string = string;
+	}
 
-    public void setBooleanP(final boolean booleanP) {
-        this.booleanP = booleanP;
-    }
+	public boolean isBooleanP() {
+		return booleanP;
+	}
 
-    public Boolean getBooleanO() {
-        return booleanO;
-    }
+	public void setBooleanP(final boolean booleanP) {
+		this.booleanP = booleanP;
+	}
 
-    public void setBooleanO(final Boolean booleanO) {
-        this.booleanO = booleanO;
-    }
+	public Boolean getBooleanO() {
+		return booleanO;
+	}
 
-    public Integer getIntegerO() {
-        return integerO;
-    }
-
-    public void setIntegerO(final Integer integerO) {
-        this.integerO = integerO;
-    }
-
-    public int getIntegerP() {
-        return integerP;
-    }
-
-    public void setIntegerP(final int integerP) {
-        this.integerP = integerP;
-    }
-
-    public Short getShortO() {
-        return shortO;
-    }
-
-    public void setShortO(final Short shortO) {
-        this.shortO = shortO;
-    }
-
-    public short getShortP() {
-        return shortP;
-    }
-
-    public void setShortP(final short shortP) {
-        this.shortP = shortP;
-    }
-
-    public Long getLongO() {
-        return longO;
-    }
-
-    public void setLongO(final Long longO) {
-        this.longO = longO;
-    }
-
-    public long getLongP() {
-        return longP;
-    }
-
-    public void setLongP(final long longP) {
-        this.longP = longP;
-    }
-
-    public Byte getByteO() {
-        return byteO;
-    }
-
-    public void setByteO(final Byte byteO) {
-        this.byteO = byteO;
-    }
-
-    public byte getByteP() {
-        return byteP;
-    }
-
-    public void setByteP(final byte byteP) {
-        this.byteP = byteP;
-    }
-
-    public BigInteger getBigInteger() {
-        return bigInteger;
-    }
-
-    public void setBigInteger(final BigInteger bigInteger) {
-        this.bigInteger = bigInteger;
-    }
-
-    public Double getDoubleO() {
-        return doubleO;
-    }
-
-    public void setDoubleO(final Double doubleO) {
-        this.doubleO = doubleO;
-    }
-
-    public double getDoubleP() {
-        return doubleP;
-    }
-
-    public void setDoubleP(final double doubleP) {
-        this.doubleP = doubleP;
-    }
-
-    public Float getFloatO() {
-        return floatO;
-    }
-
-    public void setFloatO(final Float floatO) {
-        this.floatO = floatO;
-    }
-
-    public float getFloatP() {
-        return floatP;
-    }
-
-    public void setFloatP(final float floatP) {
-        this.floatP = floatP;
-    }
-
-    public BigDecimal getBigDecimal() {
-        return bigDecimal;
-    }
-
-    public void setBigDecimal(final BigDecimal bigDecimal) {
-        this.bigDecimal = bigDecimal;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(final Date date) {
-        this.date = date;
-    }
-
-    public Calendar getCalendar() {
-        return calendar;
-    }
-
-    public void setCalendar(final Calendar calendar) {
-        this.calendar = calendar;
-    }
-
-    public MobeelizerFile getFile() {
-        return file;
-    }
-
-    public void setFile(final MobeelizerFile file) {
-        this.file = file;
-    }
+	public void setBooleanO(final Boolean booleanO) {
+		this.booleanO = booleanO;
+	}
+
+	public Integer getIntegerO() {
+		return integerO;
+	}
+
+	public void setIntegerO(final Integer integerO) {
+		this.integerO = integerO;
+	}
+
+	public int getIntegerP() {
+		return integerP;
+	}
+
+	public void setIntegerP(final int integerP) {
+		this.integerP = integerP;
+	}
+
+	public Short getShortO() {
+		return shortO;
+	}
+
+	public void setShortO(final Short shortO) {
+		this.shortO = shortO;
+	}
+
+	public short getShortP() {
+		return shortP;
+	}
+
+	public void setShortP(final short shortP) {
+		this.shortP = shortP;
+	}
+
+	public Long getLongO() {
+		return longO;
+	}
+
+	public void setLongO(final Long longO) {
+		this.longO = longO;
+	}
+
+	public long getLongP() {
+		return longP;
+	}
+
+	public void setLongP(final long longP) {
+		this.longP = longP;
+	}
+
+	public Byte getByteO() {
+		return byteO;
+	}
+
+	public void setByteO(final Byte byteO) {
+		this.byteO = byteO;
+	}
+
+	public byte getByteP() {
+		return byteP;
+	}
+
+	public void setByteP(final byte byteP) {
+		this.byteP = byteP;
+	}
+
+	public BigInteger getBigInteger() {
+		return bigInteger;
+	}
+
+	public void setBigInteger(final BigInteger bigInteger) {
+		this.bigInteger = bigInteger;
+	}
+
+	public Double getDoubleO() {
+		return doubleO;
+	}
+
+	public void setDoubleO(final Double doubleO) {
+		this.doubleO = doubleO;
+	}
+
+	public double getDoubleP() {
+		return doubleP;
+	}
+
+	public void setDoubleP(final double doubleP) {
+		this.doubleP = doubleP;
+	}
+
+	public Float getFloatO() {
+		return floatO;
+	}
+
+	public void setFloatO(final Float floatO) {
+		this.floatO = floatO;
+	}
+
+	public float getFloatP() {
+		return floatP;
+	}
+
+	public void setFloatP(final float floatP) {
+		this.floatP = floatP;
+	}
+
+	public BigDecimal getBigDecimal() {
+		return bigDecimal;
+	}
+
+	public void setBigDecimal(final BigDecimal bigDecimal) {
+		this.bigDecimal = bigDecimal;
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(final Date date) {
+		this.date = date;
+	}
+
+	public Calendar getCalendar() {
+		return calendar;
+	}
+
+	public void setCalendar(final Calendar calendar) {
+		this.calendar = calendar;
+	}
+
+	public MobeelizerFile getFile() {
+		return file;
+	}
+
+	public void setFile(final MobeelizerFile file) {
+		this.file = file;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
+	}
 
 }

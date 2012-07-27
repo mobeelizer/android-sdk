@@ -30,9 +30,8 @@ import org.json.JSONObject;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.api.MobeelizerFile;
-import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.mobile.android.MobeelizerDatabaseImpl;
@@ -86,10 +85,11 @@ public class FileFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value,
-            final MobeelizerFieldAccessor field, final Map<String, String> options, final MobeelizerErrorsHolder errors) {
+            final MobeelizerFieldAccessor field, final Map<String, String> options,
+            final MobeelizerDatabaseExceptionBuilder errors) {
         MobeelizerFile file = (MobeelizerFile) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
 
-        if (!errors.isValid()) {
+        if (!errors.hasNoErrors()) {
             return;
         }
 
@@ -99,7 +99,7 @@ public class FileFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNullValueFromEntityToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerErrors errors) {
+            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
         values.put(field.getName() + _GUID, (String) null);
         values.put(field.getName() + _NAME, (String) null);
     }
@@ -138,7 +138,8 @@ public class FileFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNotNullValueFromMapToDatabase(final ContentValues values, final String value,
-            final MobeelizerFieldAccessor field, final Map<String, String> options, final MobeelizerErrors errors) {
+            final MobeelizerFieldAccessor field, final Map<String, String> options,
+            final MobeelizerDatabaseExceptionBuilder errors) {
         try {
             JSONObject json = new JSONObject(value);
             values.put(field.getName() + _GUID, json.getString(JSON_GUID));
@@ -150,7 +151,7 @@ public class FileFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNullValueFromMapToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerErrors errors) {
+            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
         values.put(field.getName() + _GUID, (String) null);
         values.put(field.getName() + _NAME, (String) null);
     }

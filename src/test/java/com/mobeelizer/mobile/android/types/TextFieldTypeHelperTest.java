@@ -46,7 +46,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
 import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
@@ -94,8 +94,8 @@ public class TextFieldTypeHelperTest {
         options.put("maxLength", "9");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
-        when(errors.isValid()).thenReturn(true);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        when(errors.hasNoErrors()).thenReturn(true);
 
         TestEntity entity = new TestEntity();
         entity.setString("nameValue");
@@ -113,7 +113,7 @@ public class TextFieldTypeHelperTest {
         options.put("maxLength", "100");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -131,7 +131,7 @@ public class TextFieldTypeHelperTest {
         options.put("maxLength", "3");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
         entity.setString("qwer");
@@ -260,7 +260,7 @@ public class TextFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
         entity.setString(null);
@@ -315,7 +315,7 @@ public class TextFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -331,7 +331,7 @@ public class TextFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("string", "value");

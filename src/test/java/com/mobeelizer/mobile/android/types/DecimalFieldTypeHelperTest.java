@@ -51,7 +51,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.java.definition.MobeelizerErrorsHolder;
+import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
 import com.mobeelizer.java.model.ReflectionMobeelizerFieldAccessor;
@@ -124,8 +124,8 @@ public class DecimalFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
-        when(errors.isValid()).thenReturn(true);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        when(errors.hasNoErrors()).thenReturn(true);
 
         TestEntity entity = new TestEntity();
 
@@ -147,7 +147,7 @@ public class DecimalFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -168,8 +168,8 @@ public class DecimalFieldTypeHelperTest {
         options.put("includeMinValue", "true");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
-        when(errors.isValid()).thenReturn(true);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        when(errors.hasNoErrors()).thenReturn(true);
 
         TestEntity entity = new TestEntity();
         entity.setDoubleP(10.0);
@@ -204,7 +204,7 @@ public class DecimalFieldTypeHelperTest {
         options.put("includeMaxValue", "true");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
         entity.setDoubleP(11.0);
@@ -224,7 +224,7 @@ public class DecimalFieldTypeHelperTest {
         options.put("includeMaxValue", "false");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
         entity.setDoubleP(10.0);
@@ -244,7 +244,7 @@ public class DecimalFieldTypeHelperTest {
         options.put("includeMinValue", "true");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
         entity.setDoubleP(8.1);
@@ -264,7 +264,7 @@ public class DecimalFieldTypeHelperTest {
         options.put("includeMinValue", "false");
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
         entity.setDoubleP(9.0);
@@ -442,7 +442,7 @@ public class DecimalFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -496,7 +496,7 @@ public class DecimalFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -512,7 +512,7 @@ public class DecimalFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerErrorsHolder errors = mock(MobeelizerErrorsHolder.class);
+        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("doubleO", "2.2");

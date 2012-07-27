@@ -37,6 +37,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ Mobeelizer.class, FileInputStream.class, MobeelizerFileImpl.class })
 public class MobeelizerFileImplTest {
