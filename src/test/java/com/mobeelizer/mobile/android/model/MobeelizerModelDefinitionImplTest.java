@@ -44,7 +44,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.stubbing.OngoingStubbing;
@@ -61,6 +60,7 @@ import android.util.Log;
 import com.mobeelizer.java.api.MobeelizerCredential;
 import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
 import com.mobeelizer.java.api.MobeelizerField;
+import com.mobeelizer.java.api.MobeelizerFieldCredentials;
 import com.mobeelizer.java.definition.MobeelizerModelCredentialsDefinition;
 import com.mobeelizer.java.model.MobeelizerFieldImpl;
 import com.mobeelizer.java.model.MobeelizerModelImpl;
@@ -100,11 +100,18 @@ public class MobeelizerModelDefinitionImplTest {
         PowerMockito.mockStatic(Log.class);
         PowerMockito.when(Log.class, "i", anyString(), anyString()).thenReturn(0);
 
+        MobeelizerFieldCredentials allCredentials = mock(MobeelizerFieldCredentials.class);
+        when(allCredentials.getCreateAllowed()).thenReturn(MobeelizerCredential.ALL);
+        when(allCredentials.getUpdateAllowed()).thenReturn(MobeelizerCredential.ALL);
+        when(allCredentials.getReadAllowed()).thenReturn(MobeelizerCredential.ALL);
+
         field = PowerMockito.mock(MobeelizerFieldImpl.class);
         when(field.getName()).thenReturn("field");
+        when(field.getCredentials()).thenReturn(allCredentials);
 
         field2 = mock(MobeelizerAndroidField.class);
         when(field2.getName()).thenReturn("field");
+        when(field2.getCredentials()).thenReturn(allCredentials);
 
         PowerMockito.whenNew(MobeelizerAndroidField.class).withArguments(field).thenReturn(field2);
 
@@ -264,6 +271,10 @@ public class MobeelizerModelDefinitionImplTest {
         MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
         when(errors.hasNoErrors()).thenReturn(true);
 
+        Cursor cursor = mock(Cursor.class);
+        when(cursor.moveToNext()).thenReturn(true, false);
+        whenGetByGuid("testentity", "01f12df3-802e-4f08-9119-40e6b5ce715f").thenReturn(cursor);
+
         // when
         definition.update(database, entity, errors);
 
@@ -282,6 +293,10 @@ public class MobeelizerModelDefinitionImplTest {
 
         MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
         when(errors.hasNoErrors()).thenReturn(false);
+
+        Cursor cursor = mock(Cursor.class);
+        when(cursor.moveToNext()).thenReturn(true, false);
+        whenGetByGuid("testentity", "01f12df3-802e-4f08-9119-40e6b5ce715f").thenReturn(cursor);
 
         // when
         definition.update(database, entity, errors);
@@ -467,12 +482,16 @@ public class MobeelizerModelDefinitionImplTest {
     }
 
     @Test
-    // TODO MINA fix it
-    @Ignore
     public void shouldDelete() throws Exception {
         // given
         TestEntity entity = new TestEntity();
         entity.setGuid("01f12df3-802e-4f08-9119-40e6b5ce715f");
+
+        Cursor cursor = mock(Cursor.class);
+        when(cursor.moveToNext()).thenReturn(true);
+        when(cursor.getColumnIndex("_guid")).thenReturn(1);
+        when(cursor.getString(1)).thenReturn("01f12df3-802e-4f08-9119-40e6b5ce715f");
+        whenGetByGuid("testentity", "01f12df3-802e-4f08-9119-40e6b5ce715f").thenReturn(cursor);
 
         // when
         definition.delete(database, entity, errors);
@@ -504,9 +523,14 @@ public class MobeelizerModelDefinitionImplTest {
     }
 
     @Test
-    // TODO MINA fix it
-    @Ignore
     public void shouldDeleteByGuid() throws Exception {
+        // given
+        Cursor cursor = mock(Cursor.class);
+        when(cursor.moveToNext()).thenReturn(true);
+        when(cursor.getColumnIndex("_guid")).thenReturn(1);
+        when(cursor.getString(1)).thenReturn("01f12df3-802e-4f08-9119-40e6b5ce715f");
+        whenGetByGuid("testentity", "01f12df3-802e-4f08-9119-40e6b5ce715f").thenReturn(cursor);
+
         // when
         definition.deleteByGuid(database, "01f12df3-802e-4f08-9119-40e6b5ce715f", errors);
 
@@ -518,8 +542,6 @@ public class MobeelizerModelDefinitionImplTest {
     }
 
     @Test
-    // TODO MINA fix it
-    @Ignore
     public void shouldDeleteAll() throws Exception {
         // when
         definition.deleteAll(database, errors);
@@ -540,7 +562,7 @@ public class MobeelizerModelDefinitionImplTest {
         when(cursor.getString(1)).thenReturn("guid1", "guid2");
 
         when(cursor.getColumnIndex("_owner")).thenReturn(2);
-        when(cursor.getString(2)).thenReturn("owner1", "owner2");
+        when(cursor.getString(2)).thenReturn("owner1", "owner1", "owner2", "owner2");
 
         when(cursor.getColumnIndex("_conflicted")).thenReturn(3);
         when(cursor.getInt(3)).thenReturn(1, 0);

@@ -302,11 +302,16 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
 
     public void deleteAll(final SQLiteDatabase database, final MobeelizerDatabaseExceptionBuilder builder)
             throws MobeelizerDatabaseException {
-        Cursor cursor = getListCursor(database);
-        while (cursor.moveToNext()) {
-            deleteFromCursor(database, cursor, builder);
+
+        if (model.getCredentials().getDeleteAllowed() == MobeelizerCredential.ALL) {
+            database.update(tableName, valuesForDelete, _DELETED + " = 0", null);
+        } else {
+            Cursor cursor = getListCursor(database);
+            while (cursor.moveToNext()) {
+                deleteFromCursor(database, cursor, builder);
+            }
+            cursor.close();
         }
-        cursor.close();
     }
 
     private void deleteFromCursor(final SQLiteDatabase database, final Cursor cursor,
