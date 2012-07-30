@@ -48,7 +48,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.api.MobeelizerFile;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 import com.mobeelizer.java.model.MobeelizerReflectionUtil;
@@ -101,7 +101,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
         when(errors.hasNoErrors()).thenReturn(true);
 
         TestEntity entity = new TestEntity();
@@ -121,7 +121,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -231,7 +231,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         TestEntity entity = new TestEntity();
 
@@ -288,7 +288,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         Map<String, String> map = new HashMap<String, String>();
 
@@ -305,7 +305,7 @@ public class FileFieldTypeHelperTest {
         Map<String, String> options = new HashMap<String, String>();
 
         ContentValues values = mock(ContentValues.class);
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("file", "{'guid':'guid','filename':'name'}".replaceAll("'", "\""));

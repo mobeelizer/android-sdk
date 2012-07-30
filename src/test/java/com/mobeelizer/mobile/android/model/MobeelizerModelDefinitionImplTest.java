@@ -58,7 +58,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerCredential;
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.api.MobeelizerField;
 import com.mobeelizer.java.api.MobeelizerFieldCredentials;
 import com.mobeelizer.java.definition.MobeelizerModelCredentialsDefinition;
@@ -71,8 +71,8 @@ import com.mobeelizer.mobile.android.TestSimpleEntity;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerAndroidModel.class, ContentValues.class, Log.class, DatabaseUtils.class, HashMap.class,
-        MobeelizerAndroidField.class, MobeelizerDatabaseExceptionBuilder.class, MobeelizerFieldImpl.class,
-        MobeelizerDatabaseExceptionBuilder.class })
+        MobeelizerAndroidField.class, MobeelizerErrorsBuilder.class, MobeelizerFieldImpl.class,
+        MobeelizerErrorsBuilder.class })
 public class MobeelizerModelDefinitionImplTest {
 
     private MobeelizerFieldImpl field;
@@ -93,7 +93,7 @@ public class MobeelizerModelDefinitionImplTest {
 
     private Set<MobeelizerField> fields;
 
-    private MobeelizerDatabaseExceptionBuilder errors;
+    private MobeelizerErrorsBuilder errors;
 
     @Before
     public void init() throws Exception {
@@ -140,8 +140,8 @@ public class MobeelizerModelDefinitionImplTest {
         PowerMockito.mockStatic(UUID.class);
         PowerMockito.when(UUID.randomUUID()).thenReturn(uuid);
 
-        errors = mock(MobeelizerDatabaseExceptionBuilder.class);
-        PowerMockito.whenNew(MobeelizerDatabaseExceptionBuilder.class).withNoArguments().thenReturn(errors);
+        errors = mock(MobeelizerErrorsBuilder.class);
+        PowerMockito.whenNew(MobeelizerErrorsBuilder.class).withNoArguments().thenReturn(errors);
     }
 
     @Test
@@ -268,7 +268,7 @@ public class MobeelizerModelDefinitionImplTest {
         TestEntity entity = new TestEntity();
         entity.setGuid("01f12df3-802e-4f08-9119-40e6b5ce715f");
 
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
         when(errors.hasNoErrors()).thenReturn(true);
 
         Cursor cursor = mock(Cursor.class);
@@ -291,7 +291,7 @@ public class MobeelizerModelDefinitionImplTest {
         TestEntity entity = new TestEntity();
         entity.setGuid("01f12df3-802e-4f08-9119-40e6b5ce715f");
 
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
         when(errors.hasNoErrors()).thenReturn(false);
 
         Cursor cursor = mock(Cursor.class);
@@ -313,7 +313,7 @@ public class MobeelizerModelDefinitionImplTest {
         // given
         TestEntity entity = new TestEntity();
 
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
         when(errors.hasNoErrors()).thenReturn(true);
 
         // when
@@ -339,7 +339,7 @@ public class MobeelizerModelDefinitionImplTest {
         // given
         TestEntity entity = new TestEntity();
 
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
         when(errors.hasNoErrors()).thenReturn(false);
 
         // when
@@ -793,7 +793,7 @@ public class MobeelizerModelDefinitionImplTest {
         when(cursor.getColumnIndex("_modified")).thenReturn(12);
         when(cursor.getInt(12)).thenReturn(2);
 
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         // when
         boolean isTransactionSuccessful = definition.updateEntityFromSync(database, entity);

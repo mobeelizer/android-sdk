@@ -25,7 +25,7 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.api.MobeelizerField;
 import com.mobeelizer.java.api.MobeelizerFieldCredentials;
 import com.mobeelizer.java.model.MobeelizerFieldImpl;
@@ -67,7 +67,7 @@ public class MobeelizerAndroidField implements MobeelizerField {
     }
 
     public <T> void setValueFromEntityToDatabase(final ContentValues values, final T entity,
-            final MobeelizerDatabaseExceptionBuilder builder) {
+            final MobeelizerErrorsBuilder builder) {
         type.setValueFromEntityToDatabase(values, entity, field.getField(), field.isRequired(), field.getOptions(), builder);
     }
 
@@ -80,7 +80,7 @@ public class MobeelizerAndroidField implements MobeelizerField {
     }
 
     public void setValueFromMapToDatabase(final ContentValues values, final Map<String, String> map,
-            final MobeelizerDatabaseExceptionBuilder builder) {
+            final MobeelizerErrorsBuilder builder) {
         type.setValueFromMapToDatabase(values, map, field.getField(), field.isRequired(), field.getOptions(), builder);
     }
 

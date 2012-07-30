@@ -38,8 +38,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerCredential;
-import com.mobeelizer.java.api.MobeelizerDatabaseException;
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.api.MobeelizerField;
 import com.mobeelizer.java.api.MobeelizerModel;
 import com.mobeelizer.java.api.MobeelizerModelCredentials;
@@ -141,7 +140,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
     }
 
     public <T> void create(final SQLiteDatabase database, final T entity, final String owner, final String group,
-            final MobeelizerDatabaseExceptionBuilder builder) {
+            final MobeelizerErrorsBuilder builder) {
 
         MobeelizerCredential createCredentials = model.getCredentials().getCreateAllowed();
         if ((createCredentials == MobeelizerCredential.NONE)) {
@@ -195,7 +194,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         }
     }
 
-    public <T> void update(final SQLiteDatabase database, final T entity, final MobeelizerDatabaseExceptionBuilder builder) {
+    public <T> void update(final SQLiteDatabase database, final T entity, final MobeelizerErrorsBuilder builder) {
 
         String guid = (String) getValue(model.getGuidField(), entity);
         Cursor cursor = getByGuid(database, guid);
@@ -285,14 +284,12 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         return database.query(tableName, null, _DELETED + " = 0", null, null, null, null);
     }
 
-    public <T> void delete(final SQLiteDatabase database, final T entity, final MobeelizerDatabaseExceptionBuilder builder)
-            throws MobeelizerDatabaseException {
+    public <T> void delete(final SQLiteDatabase database, final T entity, final MobeelizerErrorsBuilder builder) {
         String guid = (String) getValue(model.getGuidField(), entity);
         deleteByGuid(database, guid, builder);
     }
 
-    public void deleteByGuid(final SQLiteDatabase database, final String guid, final MobeelizerDatabaseExceptionBuilder builder)
-            throws MobeelizerDatabaseException {
+    public void deleteByGuid(final SQLiteDatabase database, final String guid, final MobeelizerErrorsBuilder builder) {
         Cursor cursor = getByGuid(database, guid);
         if (cursor.moveToNext()) {
             deleteFromCursor(database, cursor, builder);
@@ -300,9 +297,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         cursor.close();
     }
 
-    public void deleteAll(final SQLiteDatabase database, final MobeelizerDatabaseExceptionBuilder builder)
-            throws MobeelizerDatabaseException {
-
+    public void deleteAll(final SQLiteDatabase database, final MobeelizerErrorsBuilder builder) {
         if (model.getCredentials().getDeleteAllowed() == MobeelizerCredential.ALL) {
             database.update(tableName, valuesForDelete, _DELETED + " = 0", null);
         } else {
@@ -314,8 +309,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         }
     }
 
-    private void deleteFromCursor(final SQLiteDatabase database, final Cursor cursor,
-            final MobeelizerDatabaseExceptionBuilder builder) {
+    private void deleteFromCursor(final SQLiteDatabase database, final Cursor cursor, final MobeelizerErrorsBuilder builder) {
         String owner = cursor.getString(cursor.getColumnIndex(_OWNER));
         String group = cursor.getString(cursor.getColumnIndex(_GROUP));
         String guid = cursor.getString(cursor.getColumnIndex(_GUID));
@@ -529,7 +523,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         values.put(_MODIFIED, Integer.valueOf(0));
         values.put(_DELETED, Integer.valueOf(entity.isDeleted() ? 1 : 0));
 
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
 
         for (MobeelizerAndroidField field : fields.values()) {
             field.setValueFromMapToDatabase(values, entity.getFields(), builder);

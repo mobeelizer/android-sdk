@@ -23,7 +23,7 @@ package com.mobeelizer.mobile.android.api;
 import java.util.List;
 import java.util.Map;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseException;
+import com.mobeelizer.java.api.MobeelizerErrors;
 import com.mobeelizer.java.api.MobeelizerModel;
 import com.mobeelizer.mobile.android.Mobeelizer;
 
@@ -74,12 +74,12 @@ public interface MobeelizerDatabase {
      * 
      * @param clazz
      *            class
-     * @throws MobeelizerDatabaseException
+     * @return null if operation completed successfully, errors otherwise
      * @since 1.4
      */
-    <T> void deleteAll(final Class<T> clazz) throws MobeelizerDatabaseException;
+    <T> MobeelizerErrors deleteAll(final Class<T> clazz);
 
-    void deleteAll(final String model) throws MobeelizerDatabaseException;
+    MobeelizerErrors deleteAll(final String model);
 
     /**
      * Delete the entities for the given class and guids from the database.
@@ -88,12 +88,12 @@ public interface MobeelizerDatabase {
      *            class
      * @param guids
      *            guids
-     * @throws MobeelizerDatabaseException
+     * @return null if operation completed successfully, errors otherwise
      * @since 1.4
      */
-    <T> void delete(final Class<T> clazz, final String... guids) throws MobeelizerDatabaseException;
+    <T> MobeelizerErrors delete(final Class<T> clazz, final String... guids);
 
-    void delete(final String model, final String... guids) throws MobeelizerDatabaseException;
+    MobeelizerErrors delete(final String model, final String... guids);
 
     /**
      * Delete the given entities from the database.
@@ -102,13 +102,12 @@ public interface MobeelizerDatabase {
      *            entity
      * @param otherEntities
      *            other entities
-     * @throws MobeelizerDatabaseException
+     * @return null if operation completed successfully, errors otherwise
      * @since 1.4
      */
-    <T> void delete(final T entity, final T... otherEntities) throws MobeelizerDatabaseException;
+    <T> MobeelizerErrors delete(final T entity, final T... otherEntities);
 
-    void deleteMap(final Map<String, Object> entity, final Map<String, Object>... otherEntities)
-            throws MobeelizerDatabaseException;
+    MobeelizerErrors deleteMap(final Map<String, Object> entity, final Map<String, Object>... otherEntities);
 
     /**
      * Check whether the entity for the given class and guid exist.
@@ -155,11 +154,11 @@ public interface MobeelizerDatabase {
      * 
      * @param entity
      *            entity
-     * @throws MobeelizerDatabaseException
+     * @return null if operation completed successfully, errors otherwise
      * @since 1.4
      */
-    <T> void save(final T entity) throws MobeelizerDatabaseException;
+    <T> MobeelizerErrors save(final T entity);
 
-    void save(final Map<String, Object> entity) throws MobeelizerDatabaseException;
+    MobeelizerErrors save(final Map<String, Object> entity);
 
 }

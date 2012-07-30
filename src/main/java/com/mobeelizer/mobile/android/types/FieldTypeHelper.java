@@ -28,7 +28,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 
@@ -73,7 +73,7 @@ public abstract class FieldTypeHelper {
             final Map<String, String> values, final MobeelizerFieldAccessor field, final Map<String, String> options);
 
     public <T> void setValueFromEntityToDatabase(final ContentValues values, final T entity, final MobeelizerFieldAccessor field,
-            final boolean required, final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
+            final boolean required, final Map<String, String> options, final MobeelizerErrorsBuilder errors) {
         Object value = getValue(field, entity);
 
         if (value == null && required) {
@@ -90,10 +90,10 @@ public abstract class FieldTypeHelper {
 
     protected abstract void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value,
             final MobeelizerFieldAccessor field, final Map<String, String> options,
-            final MobeelizerDatabaseExceptionBuilder errors);
+            final MobeelizerErrorsBuilder errors);
 
     protected abstract void setNullValueFromEntityToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors);
+            final Map<String, String> options, final MobeelizerErrorsBuilder errors);
 
     protected abstract <T> void setNotNullValueFromDatabaseToEntity(final Cursor cursor, final int columnIndex, final T entity,
             final MobeelizerFieldAccessor field, final Map<String, String> options);
@@ -127,7 +127,7 @@ public abstract class FieldTypeHelper {
 
     public void setValueFromMapToDatabase(final ContentValues values, final Map<String, String> map,
             final MobeelizerFieldAccessor field, final boolean required, final Map<String, String> options,
-            final MobeelizerDatabaseExceptionBuilder errors) {
+            final MobeelizerErrorsBuilder errors) {
         String value = map.get(field.getName());
 
         if (value == null && required) {
@@ -165,9 +165,9 @@ public abstract class FieldTypeHelper {
 
     protected abstract void setNotNullValueFromMapToDatabase(final ContentValues values, final String value,
             final MobeelizerFieldAccessor field, final Map<String, String> options,
-            final MobeelizerDatabaseExceptionBuilder errors);
+            final MobeelizerErrorsBuilder errors);
 
     protected abstract void setNullValueFromMapToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors);
+            final Map<String, String> options, final MobeelizerErrorsBuilder errors);
 
 }

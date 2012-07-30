@@ -39,7 +39,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.definition.type.helpers.MobeelizerFieldTypeHelper;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
@@ -124,7 +124,7 @@ public class FieldTypeTest {
         MobeelizerFieldAccessor field = PowerMockito.mock(MobeelizerFieldAccessor.class);
         Map<String, String> options = mock(Map.class);
         ContentValues values = mock(ContentValues.class);
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         // when
         FieldType.TEXT.setValueFromEntityToDatabase(values, entity, field, false, options, errors);

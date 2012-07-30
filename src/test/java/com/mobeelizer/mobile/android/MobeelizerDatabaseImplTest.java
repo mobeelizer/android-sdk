@@ -52,7 +52,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.api.MobeelizerModel;
 import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.mobile.android.api.MobeelizerCriteriaBuilder;
@@ -61,7 +61,7 @@ import com.mobeelizer.mobile.android.search.MobeelizerCriteriaBuilderImpl;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerDatabaseImpl.class, MobeelizerSyncIterator.class, ContentValues.class,
-        MobeelizerCriteriaBuilderImpl.class, MobeelizerSyncFileIterator.class, MobeelizerDatabaseExceptionBuilder.class })
+        MobeelizerCriteriaBuilderImpl.class, MobeelizerSyncFileIterator.class, MobeelizerErrorsBuilder.class })
 public class MobeelizerDatabaseImplTest {
 
     private MobeelizerDatabaseImpl databaseAdapter;
@@ -82,7 +82,7 @@ public class MobeelizerDatabaseImplTest {
 
     private ContentValues contentValues;
 
-    private MobeelizerDatabaseExceptionBuilder exceptionBuilder;
+    private MobeelizerErrorsBuilder exceptionBuilder;
 
     @Before
     @SuppressWarnings({ "unchecked" })
@@ -94,8 +94,8 @@ public class MobeelizerDatabaseImplTest {
         contentValues = PowerMockito.mock(ContentValues.class);
         PowerMockito.whenNew(ContentValues.class).withNoArguments().thenReturn(contentValues);
 
-        exceptionBuilder = mock(MobeelizerDatabaseExceptionBuilder.class);
-        PowerMockito.whenNew(MobeelizerDatabaseExceptionBuilder.class).withNoArguments().thenReturn(exceptionBuilder);
+        exceptionBuilder = mock(MobeelizerErrorsBuilder.class);
+        PowerMockito.whenNew(MobeelizerErrorsBuilder.class).withNoArguments().thenReturn(exceptionBuilder);
 
         model = mock(MobeelizerAndroidModel.class);
 

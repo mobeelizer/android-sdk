@@ -27,7 +27,7 @@ import java.util.Map;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.model.MobeelizerFieldAccessor;
 
@@ -54,7 +54,7 @@ public class BooleanFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected void setNotNullValueFromEntityToDatabase(final ContentValues values, final Object value,
             final MobeelizerFieldAccessor field, final Map<String, String> options,
-            final MobeelizerDatabaseExceptionBuilder errors) {
+            final MobeelizerErrorsBuilder errors) {
         Integer intValue = (Integer) getType().convertFromEntityValueToDatabaseValue(field, value, options, errors);
 
         if (!errors.hasNoErrors()) {
@@ -66,7 +66,7 @@ public class BooleanFieldTypeHelper extends FieldTypeHelper {
 
     @Override
     protected void setNullValueFromEntityToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
+            final Map<String, String> options, final MobeelizerErrorsBuilder errors) {
         values.put(field.getName(), (Integer) null);
     }
 
@@ -85,13 +85,13 @@ public class BooleanFieldTypeHelper extends FieldTypeHelper {
     @Override
     protected void setNotNullValueFromMapToDatabase(final ContentValues values, final String value,
             final MobeelizerFieldAccessor field, final Map<String, String> options,
-            final MobeelizerDatabaseExceptionBuilder errors) {
+            final MobeelizerErrorsBuilder errors) {
         values.put(field.getName(), Boolean.valueOf(value) ? 1 : 0);
     }
 
     @Override
     protected void setNullValueFromMapToDatabase(final ContentValues values, final MobeelizerFieldAccessor field,
-            final Map<String, String> options, final MobeelizerDatabaseExceptionBuilder errors) {
+            final Map<String, String> options, final MobeelizerErrorsBuilder errors) {
         values.put(field.getName(), (Integer) null);
     }
 }

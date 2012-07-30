@@ -30,8 +30,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.mobeelizer.java.api.MobeelizerDatabaseException;
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrors;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.mobile.android.api.MobeelizerCriteriaBuilder;
 import com.mobeelizer.mobile.android.api.MobeelizerDatabase;
@@ -88,23 +88,23 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     @Override
-    public <T> void save(final T entity) throws MobeelizerDatabaseException {
-        save(getModel(entity.getClass()), entity);
+    public <T> MobeelizerErrors save(final T entity) {
+        return save(getModel(entity.getClass()), entity);
     }
 
     @Override
-    public void save(final Map<String, Object> entity) throws MobeelizerDatabaseException {
-        save(getModelFromMap(entity), entity);
+    public MobeelizerErrors save(final Map<String, Object> entity) {
+        return save(getModelFromMap(entity), entity);
     }
 
-    private <T> void save(final MobeelizerAndroidModel model, final T entity) throws MobeelizerDatabaseException {
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+    private <T> MobeelizerErrors save(final MobeelizerAndroidModel model, final T entity) {
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
         if (model.exists(database, entity)) {
             model.update(database, entity, builder);
         } else {
             model.create(database, entity, application.getUser(), application.getGroup(), builder);
         }
-        builder.throwWhenErrors();
+        return builder.createWhenErrors();
     }
 
     @Override
@@ -138,59 +138,58 @@ public class MobeelizerDatabaseImpl implements MobeelizerDatabase {
     }
 
     @Override
-    public <T> void delete(final T entity, final T... otherEntities) throws MobeelizerDatabaseException {
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+    public <T> MobeelizerErrors delete(final T entity, final T... otherEntities) {
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
         MobeelizerAndroidModel model = getModel(entity.getClass());
         model.delete(database, entity, builder);
         for (T otherEntity : otherEntities) {
             model.delete(database, otherEntity, builder);
         }
-        builder.throwWhenErrors();
+        return builder.createWhenErrors();
     }
 
     @Override
-    public void deleteMap(final Map<String, Object> entity, final Map<String, Object>... otherEntities)
-            throws MobeelizerDatabaseException {
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+    public MobeelizerErrors deleteMap(final Map<String, Object> entity, final Map<String, Object>... otherEntities) {
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
         getModelFromMap(entity).delete(database, entity, builder);
         for (Map<String, Object> otherEntity : otherEntities) {
             getModelFromMap(otherEntity).delete(database, otherEntity, builder);
         }
-        builder.throwWhenErrors();
+        return builder.createWhenErrors();
     }
 
     @Override
-    public <T> void delete(final Class<T> clazz, final String... guids) throws MobeelizerDatabaseException {
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+    public <T> MobeelizerErrors delete(final Class<T> clazz, final String... guids) {
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
         MobeelizerAndroidModel model = getModel(clazz);
         for (String guid : guids) {
             model.deleteByGuid(database, guid, builder);
         }
-        builder.throwWhenErrors();
+        return builder.createWhenErrors();
     }
 
     @Override
-    public void delete(final String model, final String... guids) throws MobeelizerDatabaseException {
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+    public MobeelizerErrors delete(final String model, final String... guids) {
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
         MobeelizerAndroidModel androidModel = getModel(model);
         for (String guid : guids) {
             androidModel.deleteByGuid(database, guid, builder);
         }
-        builder.throwWhenErrors();
+        return builder.createWhenErrors();
     }
 
     @Override
-    public <T> void deleteAll(final Class<T> clazz) throws MobeelizerDatabaseException {
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+    public <T> MobeelizerErrors deleteAll(final Class<T> clazz) {
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
         getModel(clazz).deleteAll(database, builder);
-        builder.throwWhenErrors();
+        return builder.createWhenErrors();
     }
 
     @Override
-    public void deleteAll(final String model) throws MobeelizerDatabaseException {
-        MobeelizerDatabaseExceptionBuilder builder = new MobeelizerDatabaseExceptionBuilder();
+    public MobeelizerErrors deleteAll(final String model) {
+        MobeelizerErrorsBuilder builder = new MobeelizerErrorsBuilder();
         getModel(model).deleteAll(database, builder);
-        builder.throwWhenErrors();
+        return builder.createWhenErrors();
     }
 
     @Override

@@ -48,7 +48,7 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerCredential;
-import com.mobeelizer.java.api.MobeelizerDatabaseExceptionBuilder;
+import com.mobeelizer.java.api.MobeelizerErrorsBuilder;
 import com.mobeelizer.java.definition.MobeelizerFieldType;
 import com.mobeelizer.java.definition.MobeelizerModelFieldCredentialsDefinition;
 import com.mobeelizer.java.definition.MobeelizerModelFieldDefinition;
@@ -182,7 +182,7 @@ public class MobeelizerFieldDefinitionImplTest {
         // given
         TestEntity entity = new TestEntity();
         entity.setString("nameValue");
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         // when
         definition.setValueFromEntityToDatabase(values, entity, errors);
@@ -195,7 +195,7 @@ public class MobeelizerFieldDefinitionImplTest {
     @Test
     public void shouldSetEntityValueFromMap() throws Exception {
         // given
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         Map<String, String> map = new HashMap<String, String>();
         map.put("string", "nameValue");
@@ -221,7 +221,7 @@ public class MobeelizerFieldDefinitionImplTest {
         TestEntity entity = new TestEntity();
         entity.setIntegerP(12);
 
-        MobeelizerDatabaseExceptionBuilder errors = mock(MobeelizerDatabaseExceptionBuilder.class);
+        MobeelizerErrorsBuilder errors = mock(MobeelizerErrorsBuilder.class);
 
         // when
         definition.setValueFromEntityToDatabase(values, entity, errors);
