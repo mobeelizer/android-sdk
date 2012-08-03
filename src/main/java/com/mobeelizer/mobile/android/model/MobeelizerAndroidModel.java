@@ -209,6 +209,7 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         if (!checkCredential(updateCredentials, owner, group)) {
             builder.addNoCredentialsToPerformOperationOnModel("update");
         }
+
         T oldEntity = getEntity(cursor);
         cursor.close();
 
@@ -381,13 +382,18 @@ public class MobeelizerAndroidModel implements MobeelizerModel {
         return entity;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getEntity(final Cursor cursor) {
         try {
             if (!hasReadPermission(cursor)) {
                 return null;
             }
-            @SuppressWarnings("unchecked")
-            T entity = (T) model.getMappingClass().newInstance();
+            T entity = null;
+            if (model.getMappingClass() == null) {
+                entity = (T) new HashMap<String, Object>();
+            } else {
+                entity = (T) model.getMappingClass().newInstance();
+            }
             fillEntity(entity, cursor);
             return entity;
         } catch (InstantiationException e) {
