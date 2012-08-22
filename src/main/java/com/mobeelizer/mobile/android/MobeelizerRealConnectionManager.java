@@ -151,7 +151,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         MobeelizerAuthenticateResponse response = null;
 
         try {
-            response = connectionService.authenticate(application.getUser(), application.getPassword(),
+            response = connectionService.authenticate(application.getUser(), application.getPassword(), "android",
                     application.getRemoteNotificationToken());
         } catch (IOException e) {
             String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
