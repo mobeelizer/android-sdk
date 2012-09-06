@@ -28,7 +28,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerOperationError;
-import com.mobeelizer.java.api.MobeelizerOperationStatus;
+import com.mobeelizer.java.errors.MobeelizerOperationErrorImpl;
+import com.mobeelizer.java.errors.MobeelizerOperationStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 
 class MobeelizerSyncServicePerformer {
@@ -65,7 +66,6 @@ class MobeelizerSyncServicePerformer {
             database.lockModifiedFlag();
 
             String ticket = null;
-
             if (isAllSynchronization) {
                 Log.i(TAG, "Send sync all request.");
                 MobeelizerOperationStatus<String> sendSyncStatus = connectionManager.sendSyncAllRequest();
@@ -79,7 +79,7 @@ class MobeelizerSyncServicePerformer {
 
                 if (!dataFileService.prepareOutputFile(outputFile)) {
                     Log.i(TAG, "Send file haven't been created.");
-                    return MobeelizerOperationError.sendFileCreationError();
+                    return MobeelizerOperationErrorImpl.sendFileCreationError();
                 }
 
                 changeStatus(MobeelizerSyncStatus.FILE_CREATED);
@@ -128,7 +128,7 @@ class MobeelizerSyncServicePerformer {
 
             return null;
         } catch (IOException e) {
-            return MobeelizerOperationError.ioError(e);
+            return MobeelizerOperationErrorImpl.exception(e);
         } finally {
             if (outputFile != null && !outputFile.delete()) {
                 Log.w(TAG, "Cannot delete file " + outputFile.getAbsolutePath());

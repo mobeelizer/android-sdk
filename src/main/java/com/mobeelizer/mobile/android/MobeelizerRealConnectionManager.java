@@ -36,11 +36,12 @@ import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerMode;
 import com.mobeelizer.java.api.MobeelizerOperationError;
-import com.mobeelizer.java.api.MobeelizerOperationStatus;
 import com.mobeelizer.java.connection.MobeelizerAuthenticateResponse;
 import com.mobeelizer.java.connection.MobeelizerConnectionService;
 import com.mobeelizer.java.connection.MobeelizerConnectionServiceDelegate;
 import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
+import com.mobeelizer.java.errors.MobeelizerOperationErrorImpl;
+import com.mobeelizer.java.errors.MobeelizerOperationStatus;
 
 class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
@@ -141,7 +142,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
             if (roleAndInstanceGuid[0] == null) {
                 Log.e(TAG, "Login failure. Missing connection failure.");
-                return new MobeelizerLoginResponse(MobeelizerOperationError.missingConnectionError());
+                return new MobeelizerLoginResponse(MobeelizerOperationErrorImpl.missingConnectionError());
             } else {
                 Log.i(TAG, "Login '" + application.getUser() + "' from database successful.");
                 return new MobeelizerLoginResponse(null, roleAndInstanceGuid[1], roleAndInstanceGuid[0], false);
@@ -156,7 +157,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
                 String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
 
                 if (roleAndInstanceGuid[0] == null) {
-                    return new MobeelizerLoginResponse(MobeelizerOperationError.connectionError());
+                    return new MobeelizerLoginResponse(MobeelizerOperationErrorImpl.connectionError());
                 } else {
                     return new MobeelizerLoginResponse(null, roleAndInstanceGuid[1], roleAndInstanceGuid[0], false);
                 }
@@ -169,7 +170,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
         } else {
             Log.e(TAG, "Login failure. Authentication error.");
             clearRoleAndInstanceGuidInDatabase(application);
-            return new MobeelizerLoginResponse(MobeelizerOperationError.authenticationFailure());
+            return new MobeelizerLoginResponse(MobeelizerOperationErrorImpl.authenticationFailure());
         }
     }
 

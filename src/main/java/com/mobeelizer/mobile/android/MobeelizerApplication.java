@@ -47,6 +47,7 @@ import com.mobeelizer.java.api.MobeelizerOperationError;
 import com.mobeelizer.java.definition.MobeelizerApplicationDefinition;
 import com.mobeelizer.java.definition.MobeelizerDefinitionConverter;
 import com.mobeelizer.java.definition.MobeelizerDefinitionParser;
+import com.mobeelizer.java.errors.MobeelizerOperationErrorImpl;
 import com.mobeelizer.java.model.MobeelizerModelImpl;
 import com.mobeelizer.mobile.android.api.MobeelizerOperationCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncListener;
@@ -346,7 +347,7 @@ public class MobeelizerApplication {
 
     public MobeelizerOperationError sync() {
         if (!isLoggedIn()) {
-            return MobeelizerOperationError.notLoggedError();
+            return MobeelizerOperationErrorImpl.notLoggedError();
         }
         Log.i(TAG, "Truncate data and start sync service.");
         return sync(false);
@@ -359,7 +360,7 @@ public class MobeelizerApplication {
 
     public MobeelizerOperationError syncAll() {
         if (!isLoggedIn()) {
-            return MobeelizerOperationError.notLoggedError();
+            return MobeelizerOperationErrorImpl.notLoggedError();
         }
         Log.i(TAG, "Truncate data and start sync service.");
         return sync(true);
@@ -370,15 +371,12 @@ public class MobeelizerApplication {
             Log.w(TAG, "Sync is already running - skipping.");
             return null;
         }
-
         if (!connectionManager.isNetworkAvailable()) {
             Log.w(TAG, "Sync cannot be performed - network is not available.");
             setSyncStatus(MobeelizerSyncStatus.FINISHED_WITH_FAILURE);
-            return MobeelizerOperationError.missingConnectionError();
+            return MobeelizerOperationErrorImpl.missingConnectionError();
         }
-
         setSyncStatus(MobeelizerSyncStatus.STARTED);
-
         return new MobeelizerSyncServicePerformer(Mobeelizer.getInstance(), syncAll).sync();
     }
 
@@ -388,7 +386,7 @@ public class MobeelizerApplication {
             @Override
             protected MobeelizerOperationError doInBackground(final Void... params) {
                 if (!isLoggedIn()) {
-                    return MobeelizerOperationError.notLoggedError();
+                    return MobeelizerOperationErrorImpl.notLoggedError();
                 }
                 return sync(syncAll);
             }
@@ -412,11 +410,9 @@ public class MobeelizerApplication {
 
     public MobeelizerSyncStatus checkSyncStatus() {
         Log.i(TAG, "Check sync status.");
-
         if (mode == MobeelizerMode.DEVELOPMENT) {
             return MobeelizerSyncStatus.NONE;
         }
-
         return syncStatus;
     }
 
@@ -445,7 +441,7 @@ public class MobeelizerApplication {
 
     public MobeelizerOperationError unregisterForRemoteNotifications() {
         if (!isLoggedIn()) {
-            return MobeelizerOperationError.notLoggedError();
+            return MobeelizerOperationErrorImpl.notLoggedError();
         }
         return connectionManager.unregisterForRemoteNotifications(remoteNotificationToken);
     }
@@ -453,7 +449,7 @@ public class MobeelizerApplication {
     public MobeelizerOperationError sendRemoteNotification(final String device, final String group, final List<String> users,
             final Map<String, String> notification) {
         if (!isLoggedIn()) {
-            return MobeelizerOperationError.notLoggedError();
+            return MobeelizerOperationErrorImpl.notLoggedError();
         }
         return connectionManager.sendRemoteNotification(device, group, users, notification);
     }

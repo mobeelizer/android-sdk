@@ -21,26 +21,30 @@
 package com.mobeelizer.mobile.android.api;
 
 import com.mobeelizer.java.api.MobeelizerOperationError;
-import com.mobeelizer.mobile.android.Mobeelizer;
 
 /**
- * Callback used to notify when the async login is finished.
+ * Callback used to notify when the async operation is finished.
  * 
- * @since 1.0
+ * @since 1.4
  */
 public interface MobeelizerOperationCallback {
 
     /**
-     * Method invoked when the login is finished.
+     * Method invoked when the operation was finished successfully.
      * 
      * @param status
      *            login status
-     * @see Mobeelizer#login(String, String, MobeelizerLoginCallback)
-     * @see Mobeelizer#login(String, String, String, MobeelizerLoginCallback)
-     * @since 1.0
+     * @since 1.4
      */
     void onSuccess();
 
+    /**
+     * Method invoked when the operation failed.
+     * 
+     * @param error
+     *            error
+     * @since 1.4
+     */
     void onFailure(final MobeelizerOperationError error);
 
 }

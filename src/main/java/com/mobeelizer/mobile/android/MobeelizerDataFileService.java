@@ -29,6 +29,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerOperationError;
+import com.mobeelizer.java.errors.MobeelizerOperationErrorImpl;
 import com.mobeelizer.java.sync.MobeelizerInputData;
 import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.java.sync.MobeelizerOutputData;
@@ -56,14 +57,14 @@ class MobeelizerDataFileService {
                     isAllSynchronization);
 
             if (!isSuccessful) {
-                return MobeelizerOperationError.inputFileError();
+                return MobeelizerOperationErrorImpl.inputFileError();
             }
 
             application.getFileService().deleteFilesFromSync(inputData.getDeletedFiles());
 
             return null;
         } catch (IOException e) {
-            return MobeelizerOperationError.ioError(e);
+            return MobeelizerOperationErrorImpl.exception(e);
         } finally {
             if (inputData != null) {
                 inputData.close();

@@ -133,7 +133,6 @@ public class Mobeelizer extends Application {
      *            password
      * @param callback
      *            callback
-     * @see MobeelizerLoginStatus
      * @since 1.0
      */
     public static void login(final String instance, final String login, final String password,
@@ -151,8 +150,7 @@ public class Mobeelizer extends Application {
      *            login
      * @param password
      *            password
-     * @return login status
-     * @see MobeelizerLoginStatus
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError login(final String instance, final String login, final String password) {
@@ -168,7 +166,6 @@ public class Mobeelizer extends Application {
      *            password
      * @param callback
      *            callback
-     * @see MobeelizerLoginStatus
      * @see #login(String, String, String)
      * @since 1.0
      */
@@ -184,8 +181,7 @@ public class Mobeelizer extends Application {
      *            login
      * @param password
      *            password
-     * @return login status
-     * @see MobeelizerLoginStatus
+     * @return operation error or null if operation was successful
      * @see #login(String, String, String)
      * @since 1.0
      */
@@ -241,7 +237,7 @@ public class Mobeelizer extends Application {
      * Start a differential sync. Change of status will be sent through the {@link Mobeelizer#BROADCAST_SYNC_STATUS_CHANGE}. This
      * version of method is synchronous and lock the invoker thread. Do not call this method in UI thread.
      * 
-     * @return sync status
+     * @return operation error or null if operation was successful
      * @throws IllegalStateException
      *             if user session is not active
      * @since 1.0
@@ -269,7 +265,7 @@ public class Mobeelizer extends Application {
      * {@link Mobeelizer#BROADCAST_SYNC_STATUS_CHANGE}. This version of method is synchronous and lock the invoker thread. Do not
      * call this method in UI thread.
      * 
-     * @return sync status
+     * @return operation error or null if operation was successful
      * @throws IllegalStateException
      *             if user session is not active
      * @since 1.0
@@ -328,7 +324,7 @@ public class Mobeelizer extends Application {
      * 
      * @param registrationId
      *            obtained c2dm registration id
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError registerForRemoteNotifications(final String registrationId) {
@@ -338,7 +334,7 @@ public class Mobeelizer extends Application {
     /**
      * Unregisters device from receive push notifications.
      * 
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError unregisterForRemoteNotifications() {
@@ -350,7 +346,7 @@ public class Mobeelizer extends Application {
      * 
      * @param notification
      *            notification to send
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError sendRemoteNotification(final Map<String, String> notification) {
@@ -364,7 +360,7 @@ public class Mobeelizer extends Application {
      *            notification to send
      * @param device
      *            device
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError sendRemoteNotificationToDevice(final Map<String, String> notification,
@@ -379,7 +375,7 @@ public class Mobeelizer extends Application {
      *            notification to send
      * @param users
      *            list of users
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError sendRemoteNotificationToUsers(final Map<String, String> notification,
@@ -396,7 +392,7 @@ public class Mobeelizer extends Application {
      *            list of users
      * @param device
      *            device
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError sendRemoteNotificationToUsersOnDevice(final Map<String, String> notification,
@@ -411,7 +407,7 @@ public class Mobeelizer extends Application {
      *            notification to send
      * @param group
      *            group
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError sendRemoteNotificationToGroup(final Map<String, String> notification,
@@ -428,7 +424,7 @@ public class Mobeelizer extends Application {
      *            group
      * @param device
      *            device
-     * @return communication status
+     * @return operation error or null if operation was successful
      * @since 1.0
      */
     public static MobeelizerOperationError sendRemoteNotificationToGroupOnDevice(final Map<String, String> notification,
