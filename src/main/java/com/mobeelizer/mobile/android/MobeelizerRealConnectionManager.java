@@ -157,7 +157,7 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
                 String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
 
                 if (roleAndInstanceGuid[0] == null) {
-                    return new MobeelizerLoginResponse(MobeelizerOperationErrorImpl.connectionError());
+                    return new MobeelizerLoginResponse(response.getError());
                 } else {
                     return new MobeelizerLoginResponse(null, roleAndInstanceGuid[1], roleAndInstanceGuid[0], false);
                 }
