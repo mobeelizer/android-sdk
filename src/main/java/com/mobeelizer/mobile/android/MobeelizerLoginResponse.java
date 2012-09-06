@@ -20,7 +20,7 @@
 
 package com.mobeelizer.mobile.android;
 
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
+import com.mobeelizer.java.api.MobeelizerOperationError;
 
 class MobeelizerLoginResponse {
 
@@ -28,20 +28,20 @@ class MobeelizerLoginResponse {
 
     private final String instanceGuid;
 
-    private final MobeelizerLoginStatus status;
+    private final MobeelizerOperationError error;
 
     private final boolean initialSyncRequired;
 
-    public MobeelizerLoginResponse(final MobeelizerLoginStatus status, final String instanceGuid, final String role,
+    public MobeelizerLoginResponse(final MobeelizerOperationError error, final String instanceGuid, final String role,
             final boolean initialSyncRequired) {
-        this.status = status;
+        this.error = error;
         this.role = role;
         this.instanceGuid = instanceGuid;
         this.initialSyncRequired = initialSyncRequired;
     }
 
-    public MobeelizerLoginResponse(final MobeelizerLoginStatus status) {
-        this.status = status;
+    public MobeelizerLoginResponse(final MobeelizerOperationError error) {
+        this.error = error;
         this.role = null;
         this.instanceGuid = null;
         this.initialSyncRequired = false;
@@ -55,8 +55,8 @@ class MobeelizerLoginResponse {
         return instanceGuid;
     }
 
-    public MobeelizerLoginStatus getStatus() {
-        return status;
+    public MobeelizerOperationError getError() {
+        return error;
     }
 
     public boolean isInitialSyncRequired() {

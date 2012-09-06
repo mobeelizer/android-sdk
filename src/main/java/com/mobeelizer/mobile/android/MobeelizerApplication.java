@@ -43,15 +43,12 @@ import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerMode;
 import com.mobeelizer.java.api.MobeelizerModel;
+import com.mobeelizer.java.api.MobeelizerOperationError;
 import com.mobeelizer.java.definition.MobeelizerApplicationDefinition;
 import com.mobeelizer.java.definition.MobeelizerDefinitionConverter;
 import com.mobeelizer.java.definition.MobeelizerDefinitionParser;
 import com.mobeelizer.java.model.MobeelizerModelImpl;
-import com.mobeelizer.mobile.android.MobeelizerRealConnectionManager.ConnectionException;
-import com.mobeelizer.mobile.android.api.MobeelizerCommunicationStatus;
-import com.mobeelizer.mobile.android.api.MobeelizerLoginCallback;
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
-import com.mobeelizer.mobile.android.api.MobeelizerSyncCallback;
+import com.mobeelizer.mobile.android.api.MobeelizerOperationCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncListener;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 import com.mobeelizer.mobile.android.model.MobeelizerAndroidModel;
@@ -246,32 +243,36 @@ public class MobeelizerApplication {
         fileService = new MobeelizerFileService(this);
     }
 
-    public void login(final String user, final String password, final MobeelizerLoginCallback callback) {
+    public void login(final String user, final String password, final MobeelizerOperationCallback callback) {
         login(mode == MobeelizerMode.PRODUCTION ? "production" : "test", user, password, callback);
     }
 
-    public MobeelizerLoginStatus login(final String user, final String password) {
+    public MobeelizerOperationError login(final String user, final String password) {
         return login(mode == MobeelizerMode.PRODUCTION ? "production" : "test", user, password);
     }
 
-    public void login(final String instance, final String user, final String password, final MobeelizerLoginCallback callback) {
-        new AsyncTask<Void, Void, MobeelizerLoginStatus>() {
+    public void login(final String instance, final String user, final String password, final MobeelizerOperationCallback callback) {
+        new AsyncTask<Void, Void, MobeelizerOperationError>() {
 
             @Override
-            protected MobeelizerLoginStatus doInBackground(final Void... params) {
+            protected MobeelizerOperationError doInBackground(final Void... params) {
                 return login(instance, user, password);
             }
 
             @Override
-            protected void onPostExecute(final MobeelizerLoginStatus status) {
-                super.onPostExecute(status);
-                callback.onLoginFinished(status);
+            protected void onPostExecute(final MobeelizerOperationError error) {
+                super.onPostExecute(error);
+                if (error == null) {
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure(error);
+                }
             }
 
         }.execute();
     }
 
-    public MobeelizerLoginStatus login(final String instance, final String user, final String password) {
+    public MobeelizerOperationError login(final String instance, final String user, final String password) {
         if (isLoggedIn()) {
             logout();
         }
@@ -284,13 +285,13 @@ public class MobeelizerApplication {
 
         MobeelizerLoginResponse status = connectionManager.login();
 
-        Log.i(TAG, "Login result: " + status.getStatus() + ", " + status.getRole() + ", " + status.getInstanceGuid());
+        Log.i(TAG, "Login result: " + status.getError() + ", " + status.getRole() + ", " + status.getInstanceGuid());
 
-        if (status.getStatus() != MobeelizerLoginStatus.OK) {
+        if (status.getError() != null) {
             this.instance = null;
             this.user = null;
             this.password = null;
-            return status.getStatus();
+            return status.getError();
         }
 
         role = status.getRole();
@@ -312,7 +313,7 @@ public class MobeelizerApplication {
             sync(true);
         }
 
-        return MobeelizerLoginStatus.OK;
+        return null;
     }
 
     public void logout() {
@@ -338,40 +339,42 @@ public class MobeelizerApplication {
         loggedIn = false;
     }
 
-    public void sync(final MobeelizerSyncCallback callback) {
-        checkIfLoggedIn();
+    public void sync(final MobeelizerOperationCallback callback) {
         Log.i(TAG, "Start sync service.");
         sync(false, callback);
     }
 
-    public MobeelizerSyncStatus sync() {
-        checkIfLoggedIn();
+    public MobeelizerOperationError sync() {
+        if (!isLoggedIn()) {
+            return MobeelizerOperationError.notLoggedError();
+        }
         Log.i(TAG, "Truncate data and start sync service.");
         return sync(false);
     }
 
-    public void syncAll(final MobeelizerSyncCallback callback) {
-        checkIfLoggedIn();
+    public void syncAll(final MobeelizerOperationCallback callback) {
         Log.i(TAG, "Truncate data and start sync service.");
         sync(true, callback);
     }
 
-    public MobeelizerSyncStatus syncAll() {
-        checkIfLoggedIn();
+    public MobeelizerOperationError syncAll() {
+        if (!isLoggedIn()) {
+            return MobeelizerOperationError.notLoggedError();
+        }
         Log.i(TAG, "Truncate data and start sync service.");
         return sync(true);
     }
 
-    private MobeelizerSyncStatus sync(final boolean syncAll) {
+    private MobeelizerOperationError sync(final boolean syncAll) {
         if (mode == MobeelizerMode.DEVELOPMENT || checkSyncStatus().isRunning()) {
             Log.w(TAG, "Sync is already running - skipping.");
-            return MobeelizerSyncStatus.NONE;
+            return null;
         }
 
         if (!connectionManager.isNetworkAvailable()) {
             Log.w(TAG, "Sync cannot be performed - network is not available.");
             setSyncStatus(MobeelizerSyncStatus.FINISHED_WITH_FAILURE);
-            return MobeelizerSyncStatus.FINISHED_WITH_FAILURE;
+            return MobeelizerOperationError.missingConnectionError();
         }
 
         setSyncStatus(MobeelizerSyncStatus.STARTED);
@@ -379,18 +382,25 @@ public class MobeelizerApplication {
         return new MobeelizerSyncServicePerformer(Mobeelizer.getInstance(), syncAll).sync();
     }
 
-    private void sync(final boolean syncAll, final MobeelizerSyncCallback callback) {
-        new AsyncTask<Void, Void, MobeelizerSyncStatus>() {
+    private void sync(final boolean syncAll, final MobeelizerOperationCallback callback) {
+        new AsyncTask<Void, Void, MobeelizerOperationError>() {
 
             @Override
-            protected MobeelizerSyncStatus doInBackground(final Void... params) {
+            protected MobeelizerOperationError doInBackground(final Void... params) {
+                if (!isLoggedIn()) {
+                    return MobeelizerOperationError.notLoggedError();
+                }
                 return sync(syncAll);
             }
 
             @Override
-            protected void onPostExecute(final MobeelizerSyncStatus status) {
-                super.onPostExecute(status);
-                callback.onSyncFinished(status);
+            protected void onPostExecute(final MobeelizerOperationError error) {
+                super.onPostExecute(error);
+                if (error == null) {
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure(error);
+                }
             }
 
         }.execute();
@@ -401,7 +411,6 @@ public class MobeelizerApplication {
     }
 
     public MobeelizerSyncStatus checkSyncStatus() {
-        checkIfLoggedIn();
         Log.i(TAG, "Check sync status.");
 
         if (mode == MobeelizerMode.DEVELOPMENT) {
@@ -426,40 +435,27 @@ public class MobeelizerApplication {
         return loggedIn;
     }
 
-    public MobeelizerCommunicationStatus registerForRemoteNotifications(final String registrationId) {
-        try {
-            remoteNotificationToken = registrationId;
-            if (isLoggedIn()) {
-                connectionManager.registerForRemoteNotifications(registrationId);
-            }
-            return MobeelizerCommunicationStatus.SUCCESS;
-        } catch (ConnectionException e) {
-            Log.e(TAG, e.getMessage(), e);
-            return MobeelizerCommunicationStatus.FAILURE;
+    public MobeelizerOperationError registerForRemoteNotifications(final String registrationId) {
+        remoteNotificationToken = registrationId;
+        if (isLoggedIn()) {
+            return connectionManager.registerForRemoteNotifications(registrationId);
         }
+        return null;
     }
 
-    public MobeelizerCommunicationStatus unregisterForRemoteNotifications() {
-        try {
-            checkIfLoggedIn();
-            connectionManager.unregisterForRemoteNotifications(remoteNotificationToken);
-            return MobeelizerCommunicationStatus.SUCCESS;
-        } catch (ConnectionException e) {
-            Log.e(TAG, e.getMessage(), e);
-            return MobeelizerCommunicationStatus.FAILURE;
+    public MobeelizerOperationError unregisterForRemoteNotifications() {
+        if (!isLoggedIn()) {
+            return MobeelizerOperationError.notLoggedError();
         }
+        return connectionManager.unregisterForRemoteNotifications(remoteNotificationToken);
     }
 
-    public MobeelizerCommunicationStatus sendRemoteNotification(final String device, final String group,
-            final List<String> users, final Map<String, String> notification) {
-        try {
-            checkIfLoggedIn();
-            connectionManager.sendRemoteNotification(device, group, users, notification);
-            return MobeelizerCommunicationStatus.SUCCESS;
-        } catch (ConnectionException e) {
-            Log.e(TAG, e.getMessage(), e);
-            return MobeelizerCommunicationStatus.FAILURE;
+    public MobeelizerOperationError sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification) {
+        if (!isLoggedIn()) {
+            return MobeelizerOperationError.notLoggedError();
         }
+        return connectionManager.sendRemoteNotification(device, group, users, notification);
     }
 
     int getDatabaseVersion() {
@@ -479,7 +475,9 @@ public class MobeelizerApplication {
     }
 
     public MobeelizerDatabaseImpl getDatabase() {
-        checkIfLoggedIn();
+        if (!isLoggedIn()) {
+            throw new IllegalStateException("User is not logged in");
+        }
         return database;
     }
 
@@ -537,12 +535,6 @@ public class MobeelizerApplication {
 
     MobeelizerApplicationDefinition getDefinition() {
         return definition;
-    }
-
-    private void checkIfLoggedIn() {
-        if (!isLoggedIn()) {
-            throw new IllegalStateException("User is not logged in.");
-        }
     }
 
     private Bundle getMetaData(final Application mobeelizer) {

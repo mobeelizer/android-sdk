@@ -20,8 +20,9 @@
 
 package com.mobeelizer.mobile.android;
 
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -56,7 +57,6 @@ import android.net.Proxy;
 import android.util.Log;
 
 import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 
 // TODO MASZ fix test
 @Ignore
@@ -178,7 +178,7 @@ public class MobeelizerRealConnectionManagerTest {
 
         assertEquals("role", response.getRole());
         assertEquals("0000", response.getInstanceGuid());
-        assertEquals(MobeelizerLoginStatus.OK, response.getStatus());
+        assertNull(response.getError());
     }
 
     @Test
@@ -196,7 +196,7 @@ public class MobeelizerRealConnectionManagerTest {
         verify(database).clearRoleAndInstanceGuid("instance", "user");
 
         assertNull(response.getRole());
-        assertEquals(MobeelizerLoginStatus.AUTHENTICATION_FAILURE, response.getStatus());
+        assertNotNull(response.getError());
     }
 
     @Test
@@ -214,7 +214,7 @@ public class MobeelizerRealConnectionManagerTest {
         // then
         assertNull(response.getRole());
         assertNull(response.getInstanceGuid());
-        assertEquals(MobeelizerLoginStatus.CONNECTION_FAILURE, response.getStatus());
+        assertNotNull(response.getError());
     }
 
     @Test
@@ -229,7 +229,7 @@ public class MobeelizerRealConnectionManagerTest {
         // then
         assertNull(response.getRole());
         assertNull(response.getInstanceGuid());
-        assertEquals(MobeelizerLoginStatus.CONNECTION_FAILURE, response.getStatus());
+        assertNotNull(response.getError());
     }
 
     @Test
@@ -244,7 +244,7 @@ public class MobeelizerRealConnectionManagerTest {
         // then
         assertEquals("role", response.getRole());
         assertEquals("0000", response.getInstanceGuid());
-        assertEquals(MobeelizerLoginStatus.OK, response.getStatus());
+        assertNull(response.getError());
     }
 
     @Test
@@ -259,7 +259,7 @@ public class MobeelizerRealConnectionManagerTest {
         // then
         assertEquals("role", response.getRole());
         assertEquals("0000", response.getInstanceGuid());
-        assertEquals(MobeelizerLoginStatus.OK, response.getStatus());
+        assertNull(response.getError());
     }
 
     @Test
@@ -274,7 +274,7 @@ public class MobeelizerRealConnectionManagerTest {
         // then
         assertNull(response.getRole());
         assertNull(response.getInstanceGuid());
-        assertEquals(MobeelizerLoginStatus.MISSING_CONNECTION_FAILURE, response.getStatus());
+        assertNotNull(response.getError());
     }
 
 }

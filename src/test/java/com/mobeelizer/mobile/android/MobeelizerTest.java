@@ -36,8 +36,8 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.mobeelizer.java.api.MobeelizerFile;
+import com.mobeelizer.java.api.MobeelizerOperationError;
 import com.mobeelizer.mobile.android.api.MobeelizerDatabase;
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 
 @RunWith(PowerMockRunner.class)
@@ -77,24 +77,11 @@ public class MobeelizerTest {
     @Test
     public void shouldLogin() throws Exception {
         // given
-        MobeelizerLoginStatus expectedStatus = MobeelizerLoginStatus.OK;
+        MobeelizerOperationError expectedStatus = mock(MobeelizerOperationError.class);
         when(application.login("instance", "user", "password")).thenReturn(expectedStatus);
 
         // when
-        MobeelizerLoginStatus status = Mobeelizer.login("instance", "user", "password");
-
-        // then
-        assertEquals(expectedStatus, status);
-    }
-
-    @Test
-    public void shouldLoginWithFailure() throws Exception {
-        // given
-        MobeelizerLoginStatus expectedStatus = MobeelizerLoginStatus.CONNECTION_FAILURE;
-        when(application.login("instance", "user", "password")).thenReturn(expectedStatus);
-
-        // when
-        MobeelizerLoginStatus status = Mobeelizer.login("instance", "user", "password");
+        MobeelizerOperationError status = Mobeelizer.login("instance", "user", "password");
 
         // then
         assertEquals(expectedStatus, status);

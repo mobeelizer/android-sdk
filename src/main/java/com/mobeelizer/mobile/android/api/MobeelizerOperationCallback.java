@@ -1,5 +1,5 @@
 // 
-// MobeelizerCommunicationStatus.java
+// MobeelizerLoginCallback.java
 // 
 // Copyright (C) 2012 Mobeelizer Ltd. All Rights Reserved.
 //
@@ -20,25 +20,27 @@
 
 package com.mobeelizer.mobile.android.api;
 
+import com.mobeelizer.java.api.MobeelizerOperationError;
+import com.mobeelizer.mobile.android.Mobeelizer;
+
 /**
- * The result of communication.
+ * Callback used to notify when the async login is finished.
  * 
  * @since 1.0
  */
-public enum MobeelizerCommunicationStatus {
+public interface MobeelizerOperationCallback {
 
     /**
-     * Communication completed successfully.
+     * Method invoked when the login is finished.
      * 
+     * @param status
+     *            login status
+     * @see Mobeelizer#login(String, String, MobeelizerLoginCallback)
+     * @see Mobeelizer#login(String, String, String, MobeelizerLoginCallback)
      * @since 1.0
      */
-    SUCCESS,
+    void onSuccess();
 
-    /**
-     * Connection error. Look for the explanation in the application logs.
-     * 
-     * @since 1.0
-     */
-    FAILURE
+    void onFailure(final MobeelizerOperationError error);
 
 }

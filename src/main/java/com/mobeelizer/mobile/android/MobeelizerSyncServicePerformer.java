@@ -27,7 +27,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.mobeelizer.mobile.android.MobeelizerRealConnectionManager.ConnectionException;
+import com.mobeelizer.java.api.MobeelizerOperationError;
+import com.mobeelizer.java.api.MobeelizerOperationStatus;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 
 class MobeelizerSyncServicePerformer {
@@ -46,10 +47,10 @@ class MobeelizerSyncServicePerformer {
         this.dataFileService = new MobeelizerDataFileService(application);
     }
 
-    public MobeelizerSyncStatus sync() {
+    public MobeelizerOperationError sync() {
         if (application.checkSyncStatus() != MobeelizerSyncStatus.STARTED) {
             Log.w(TAG, "Send is already running - skipping.");
-            return MobeelizerSyncStatus.NONE;
+            return null;
         }
 
         MobeelizerDatabaseImpl database = application.getDatabase();
@@ -67,27 +68,38 @@ class MobeelizerSyncServicePerformer {
 
             if (isAllSynchronization) {
                 Log.i(TAG, "Send sync all request.");
-                ticket = connectionManager.sendSyncAllRequest();
+                MobeelizerOperationStatus<String> sendSyncStatus = connectionManager.sendSyncAllRequest();
+                if (sendSyncStatus.getError() == null) {
+                    ticket = sendSyncStatus.getContent();
+                } else {
+                    return sendSyncStatus.getError();
+                }
             } else {
                 outputFile = File.createTempFile("sync", "sync", application.getContext().getDir("sync", Context.MODE_PRIVATE));
 
                 if (!dataFileService.prepareOutputFile(outputFile)) {
                     Log.i(TAG, "Send file haven't been created.");
-                    return MobeelizerSyncStatus.FINISHED_WITH_FAILURE;
+                    return MobeelizerOperationError.sendFileCreationError();
                 }
 
                 changeStatus(MobeelizerSyncStatus.FILE_CREATED);
 
                 Log.i(TAG, "Send sync request.");
-                ticket = connectionManager.sendSyncDiffRequest(outputFile);
+                MobeelizerOperationStatus<String> sendSyncStatus = connectionManager.sendSyncDiffRequest(outputFile);
+                if (sendSyncStatus.getError() == null) {
+                    ticket = sendSyncStatus.getContent();
+                } else {
+                    return sendSyncStatus.getError();
+                }
             }
 
             Log.i(TAG, "Sync request completed: " + ticket + ".");
 
             changeStatus(MobeelizerSyncStatus.TASK_CREATED);
 
-            if (!connectionManager.waitUntilSyncRequestComplete(ticket)) {
-                return MobeelizerSyncStatus.FINISHED_WITH_FAILURE;
+            MobeelizerOperationError waitRequestError = connectionManager.waitUntilSyncRequestComplete(ticket);
+            if (waitRequestError != null) {
+                return waitRequestError;
             }
 
             Log.i(TAG, "Sync process complete with success.");
@@ -97,21 +109,26 @@ class MobeelizerSyncServicePerformer {
 
             changeStatus(MobeelizerSyncStatus.FILE_RECEIVED);
 
-            success = dataFileService.processInputFile(inputFile, isAllSynchronization);
+            MobeelizerOperationError processFileError = dataFileService.processInputFile(inputFile, isAllSynchronization);
 
-            if (!success) {
-                return MobeelizerSyncStatus.FINISHED_WITH_FAILURE;
+            if (processFileError != null) {
+                return processFileError;
             }
 
-            connectionManager.confirmTask(ticket);
+            MobeelizerOperationError confirmTaskError = connectionManager.confirmTask(ticket);
+            if (confirmTaskError != null) {
+                return confirmTaskError;
+            }
             database.clearModifiedFlag();
             application.getInternalDatabase().setInitialSyncAsNotRequired(application.getInstance(), application.getUser());
+            // } catch (IOException e) {
+            // Log.e(TAG, e.getMessage(), e);
+            // return new
+            success = true;
+
+            return null;
         } catch (IOException e) {
-            success = false;
-            Log.e(TAG, e.getMessage(), e);
-        } catch (ConnectionException e) {
-            success = false;
-            Log.e(TAG, e.getMessage(), e);
+            return MobeelizerOperationError.ioError(e);
         } finally {
             if (outputFile != null && !outputFile.delete()) {
                 Log.w(TAG, "Cannot delete file " + outputFile.getAbsolutePath());
@@ -128,7 +145,6 @@ class MobeelizerSyncServicePerformer {
             }
         }
 
-        return success ? MobeelizerSyncStatus.FINISHED_WITH_SUCCESS : MobeelizerSyncStatus.FINISHED_WITH_FAILURE;
     }
 
     public void changeStatus(final MobeelizerSyncStatus status) {

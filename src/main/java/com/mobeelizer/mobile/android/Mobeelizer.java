@@ -27,11 +27,9 @@ import java.util.Map;
 import android.app.Application;
 
 import com.mobeelizer.java.api.MobeelizerFile;
-import com.mobeelizer.mobile.android.api.MobeelizerCommunicationStatus;
+import com.mobeelizer.java.api.MobeelizerOperationError;
 import com.mobeelizer.mobile.android.api.MobeelizerDatabase;
-import com.mobeelizer.mobile.android.api.MobeelizerLoginCallback;
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
-import com.mobeelizer.mobile.android.api.MobeelizerSyncCallback;
+import com.mobeelizer.mobile.android.api.MobeelizerOperationCallback;
 import com.mobeelizer.mobile.android.api.MobeelizerSyncStatus;
 
 /**
@@ -139,7 +137,7 @@ public class Mobeelizer extends Application {
      * @since 1.0
      */
     public static void login(final String instance, final String login, final String password,
-            final MobeelizerLoginCallback callback) {
+            final MobeelizerOperationCallback callback) {
         getInstance().login(instance, login, password, callback);
     }
 
@@ -157,7 +155,7 @@ public class Mobeelizer extends Application {
      * @see MobeelizerLoginStatus
      * @since 1.0
      */
-    public static MobeelizerLoginStatus login(final String instance, final String login, final String password) {
+    public static MobeelizerOperationError login(final String instance, final String login, final String password) {
         return getInstance().login(instance, login, password);
     }
 
@@ -174,7 +172,7 @@ public class Mobeelizer extends Application {
      * @see #login(String, String, String)
      * @since 1.0
      */
-    public static void login(final String login, final String password, final MobeelizerLoginCallback callback) {
+    public static void login(final String login, final String password, final MobeelizerOperationCallback callback) {
         getInstance().login(login, password, callback);
     }
 
@@ -191,7 +189,7 @@ public class Mobeelizer extends Application {
      * @see #login(String, String, String)
      * @since 1.0
      */
-    public static MobeelizerLoginStatus login(final String login, final String password) {
+    public static MobeelizerOperationError login(final String login, final String password) {
         return getInstance().login(login, password);
     }
 
@@ -235,7 +233,7 @@ public class Mobeelizer extends Application {
      *             if user session is not active
      * @since 1.0
      */
-    public static void sync(final MobeelizerSyncCallback callback) {
+    public static void sync(final MobeelizerOperationCallback callback) {
         getInstance().sync(callback);
     }
 
@@ -248,7 +246,7 @@ public class Mobeelizer extends Application {
      *             if user session is not active
      * @since 1.0
      */
-    public static MobeelizerSyncStatus sync() {
+    public static MobeelizerOperationError sync() {
         return getInstance().sync();
     }
 
@@ -262,7 +260,7 @@ public class Mobeelizer extends Application {
      *             if user session is not active
      * @since 1.0
      */
-    public static void syncAll(final MobeelizerSyncCallback callback) {
+    public static void syncAll(final MobeelizerOperationCallback callback) {
         getInstance().syncAll(callback);
     }
 
@@ -276,7 +274,7 @@ public class Mobeelizer extends Application {
      *             if user session is not active
      * @since 1.0
      */
-    public static MobeelizerSyncStatus syncAll() {
+    public static MobeelizerOperationError syncAll() {
         return getInstance().syncAll();
     }
 
@@ -333,7 +331,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus registerForRemoteNotifications(final String registrationId) {
+    public static MobeelizerOperationError registerForRemoteNotifications(final String registrationId) {
         return getInstance().registerForRemoteNotifications(registrationId);
     }
 
@@ -343,7 +341,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus unregisterForRemoteNotifications() {
+    public static MobeelizerOperationError unregisterForRemoteNotifications() {
         return getInstance().unregisterForRemoteNotifications();
     }
 
@@ -355,7 +353,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus sendRemoteNotification(final Map<String, String> notification) {
+    public static MobeelizerOperationError sendRemoteNotification(final Map<String, String> notification) {
         return getInstance().sendRemoteNotification(null, null, null, notification);
     }
 
@@ -369,7 +367,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus sendRemoteNotificationToDevice(final Map<String, String> notification,
+    public static MobeelizerOperationError sendRemoteNotificationToDevice(final Map<String, String> notification,
             final String device) {
         return getInstance().sendRemoteNotification(device, null, null, notification);
     }
@@ -384,7 +382,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus sendRemoteNotificationToUsers(final Map<String, String> notification,
+    public static MobeelizerOperationError sendRemoteNotificationToUsers(final Map<String, String> notification,
             final List<String> users) {
         return getInstance().sendRemoteNotification(null, null, users, notification);
     }
@@ -401,7 +399,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus sendRemoteNotificationToUsersOnDevice(final Map<String, String> notification,
+    public static MobeelizerOperationError sendRemoteNotificationToUsersOnDevice(final Map<String, String> notification,
             final List<String> users, final String device) {
         return getInstance().sendRemoteNotification(device, null, users, notification);
     }
@@ -416,7 +414,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus sendRemoteNotificationToGroup(final Map<String, String> notification,
+    public static MobeelizerOperationError sendRemoteNotificationToGroup(final Map<String, String> notification,
             final String group) {
         return getInstance().sendRemoteNotification(null, group, null, notification);
     }
@@ -433,7 +431,7 @@ public class Mobeelizer extends Application {
      * @return communication status
      * @since 1.0
      */
-    public static MobeelizerCommunicationStatus sendRemoteNotificationToGroupOnDevice(final Map<String, String> notification,
+    public static MobeelizerOperationError sendRemoteNotificationToGroupOnDevice(final Map<String, String> notification,
             final String group, final String device) {
         return getInstance().sendRemoteNotification(device, group, null, notification);
     }

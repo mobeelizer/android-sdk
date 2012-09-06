@@ -24,7 +24,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
+import com.mobeelizer.java.api.MobeelizerOperationError;
+import com.mobeelizer.java.api.MobeelizerOperationStatus;
 
 class MobeelizerDevelopmentConnectionManager implements MobeelizerConnectionManager {
 
@@ -45,22 +46,21 @@ class MobeelizerDevelopmentConnectionManager implements MobeelizerConnectionMana
 
     @Override
     public MobeelizerLoginResponse login() {
-        return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, "00000000-0000-0000-0000-000000000000", developmentRole,
-                false);
+        return new MobeelizerLoginResponse(null, "00000000-0000-0000-0000-000000000000", developmentRole, false);
     }
 
     @Override
-    public String sendSyncAllRequest() {
+    public MobeelizerOperationStatus<String> sendSyncAllRequest() {
         throw new UnsupportedOperationException(SYNC_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }
 
     @Override
-    public String sendSyncDiffRequest(final File outputFile) {
+    public MobeelizerOperationStatus<String> sendSyncDiffRequest(final File outputFile) {
         throw new UnsupportedOperationException(SYNC_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }
 
     @Override
-    public boolean waitUntilSyncRequestComplete(final String ticket) {
+    public MobeelizerOperationError waitUntilSyncRequestComplete(final String ticket) {
         throw new UnsupportedOperationException(SYNC_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }
 
@@ -70,22 +70,22 @@ class MobeelizerDevelopmentConnectionManager implements MobeelizerConnectionMana
     }
 
     @Override
-    public void confirmTask(final String ticket) {
+    public MobeelizerOperationError confirmTask(final String ticket) {
         throw new UnsupportedOperationException(SYNC_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }
 
     @Override
-    public void registerForRemoteNotifications(final String registrationId) {
+    public MobeelizerOperationError registerForRemoteNotifications(final String registrationId) {
         throw new UnsupportedOperationException(PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }
 
     @Override
-    public void unregisterForRemoteNotifications(final String registrationId) {
+    public MobeelizerOperationError unregisterForRemoteNotifications(final String registrationId) {
         throw new UnsupportedOperationException(PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }
 
     @Override
-    public void sendRemoteNotification(final String device, final String group, final List<String> users,
+    public MobeelizerOperationError sendRemoteNotification(final String device, final String group, final List<String> users,
             final Map<String, String> notification) {
         throw new UnsupportedOperationException(PUSH_IS_NOT_SUPPORTED_IN_DEVELOPMENT_MODE);
     }

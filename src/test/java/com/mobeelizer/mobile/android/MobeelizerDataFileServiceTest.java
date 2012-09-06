@@ -20,7 +20,8 @@
 
 package com.mobeelizer.mobile.android;
 
-import static org.junit.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -47,6 +48,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import android.content.Context;
 import android.util.Log;
 
+import com.mobeelizer.java.api.MobeelizerOperationError;
 import com.mobeelizer.java.sync.MobeelizerInputData;
 import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.java.sync.MobeelizerOutputData;
@@ -98,7 +100,7 @@ class MobeelizerDataFileServiceTest {
         when(database.updateEntitiesFromSync(inputDataIterator, true)).thenReturn(true);
 
         // when
-        boolean result = dataFileService.processInputFile(file, true);
+        MobeelizerOperationError result = dataFileService.processInputFile(file, true);
 
         // then
         InOrder order = Mockito.inOrder(inputData, database, fileService);
@@ -106,7 +108,7 @@ class MobeelizerDataFileServiceTest {
         order.verify(database).updateEntitiesFromSync(inputDataIterator, true);
         order.verify(fileService).deleteFilesFromSync(anyList());
         order.verify(inputData).close();
-        assertTrue(result);
+        assertNull(result);
     }
 
     @Test
@@ -126,14 +128,14 @@ class MobeelizerDataFileServiceTest {
         when(database.updateEntitiesFromSync(inputDataIterator, false)).thenReturn(false);
 
         // when
-        boolean result = dataFileService.processInputFile(file, false);
+        MobeelizerOperationError result = dataFileService.processInputFile(file, false);
 
         // then
         InOrder order = Mockito.inOrder(inputData, database, fileService);
         order.verify(fileService).addFilesFromSync(anyList(), any(MobeelizerInputData.class));
         order.verify(database).updateEntitiesFromSync(inputDataIterator, false);
         order.verify(inputData).close();
-        assertFalse(result);
+        assertNotNull(result);
     }
 
     @Test

@@ -35,11 +35,12 @@ import android.net.Proxy;
 import android.util.Log;
 
 import com.mobeelizer.java.api.MobeelizerMode;
+import com.mobeelizer.java.api.MobeelizerOperationError;
+import com.mobeelizer.java.api.MobeelizerOperationStatus;
 import com.mobeelizer.java.connection.MobeelizerAuthenticateResponse;
 import com.mobeelizer.java.connection.MobeelizerConnectionService;
 import com.mobeelizer.java.connection.MobeelizerConnectionServiceDelegate;
 import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
 
 class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
@@ -140,115 +141,77 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
             if (roleAndInstanceGuid[0] == null) {
                 Log.e(TAG, "Login failure. Missing connection failure.");
-                return new MobeelizerLoginResponse(MobeelizerLoginStatus.MISSING_CONNECTION_FAILURE);
+                return new MobeelizerLoginResponse(MobeelizerOperationError.missingConnectionError());
             } else {
                 Log.i(TAG, "Login '" + application.getUser() + "' from database successful.");
-                return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, roleAndInstanceGuid[1], roleAndInstanceGuid[0],
-                        false);
+                return new MobeelizerLoginResponse(null, roleAndInstanceGuid[1], roleAndInstanceGuid[0], false);
             }
         }
 
-        MobeelizerAuthenticateResponse response = null;
-
-        try {
-            response = connectionService.authenticate(application.getUser(), application.getPassword(), "android",
-                    application.getRemoteNotificationToken());
-        } catch (IOException e) {
-            String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
-
-            if (roleAndInstanceGuid[0] == null) {
-                return new MobeelizerLoginResponse(MobeelizerLoginStatus.CONNECTION_FAILURE);
-            } else {
-                return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, roleAndInstanceGuid[1], roleAndInstanceGuid[0],
-                        false);
-            }
-        }
+        MobeelizerAuthenticateResponse response = connectionService.authenticate(application.getUser(),
+                application.getPassword(), "android", application.getRemoteNotificationToken());
 
         if (response != null) {
+            if (response.getError() != null) {
+                String[] roleAndInstanceGuid = getRoleAndInstanceGuidFromDatabase(application);
+
+                if (roleAndInstanceGuid[0] == null) {
+                    return new MobeelizerLoginResponse(MobeelizerOperationError.connectionError());
+                } else {
+                    return new MobeelizerLoginResponse(null, roleAndInstanceGuid[1], roleAndInstanceGuid[0], false);
+                }
+            }
             boolean initialSyncRequired = isInitialSyncRequired(application, response.getInstanceGuid());
 
             setRoleAndInstanceGuidInDatabase(application, response.getRole(), response.getInstanceGuid());
             Log.i(TAG, "Login '" + application.getUser() + "' successful.");
-            return new MobeelizerLoginResponse(MobeelizerLoginStatus.OK, response.getInstanceGuid(), response.getRole(),
-                    initialSyncRequired);
+            return new MobeelizerLoginResponse(null, response.getInstanceGuid(), response.getRole(), initialSyncRequired);
         } else {
             Log.e(TAG, "Login failure. Authentication error.");
             clearRoleAndInstanceGuidInDatabase(application);
-            return new MobeelizerLoginResponse(MobeelizerLoginStatus.AUTHENTICATION_FAILURE);
+            return new MobeelizerLoginResponse(MobeelizerOperationError.authenticationFailure());
         }
     }
 
     @Override
-    public String sendSyncAllRequest() throws ConnectionException {
-        try {
-            return connectionService.sendSyncAllRequest();
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public MobeelizerOperationStatus<String> sendSyncAllRequest() {
+        return connectionService.sendSyncAllRequest();
     }
 
     @Override
-    public String sendSyncDiffRequest(final File outputFile) throws ConnectionException {
-        try {
-            return connectionService.sendSyncDiffRequest(outputFile);
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public MobeelizerOperationStatus<String> sendSyncDiffRequest(final File outputFile) {
+        return connectionService.sendSyncDiffRequest(outputFile);
     }
 
     @Override
-    public boolean waitUntilSyncRequestComplete(final String ticket) throws ConnectionException {
-        try {
-            return connectionService.waitUntilSyncRequestComplete(ticket).isSuccess();
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public MobeelizerOperationError waitUntilSyncRequestComplete(final String ticket) {
+        return connectionService.waitUntilSyncRequestComplete(ticket);
     }
 
     @Override
-    public File getSyncData(final String ticket) throws ConnectionException {
-        try {
-            return connectionService.getSyncData(ticket);
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public File getSyncData(final String ticket) throws IOException {
+        return connectionService.getSyncData(ticket);
     }
 
     @Override
-    public void confirmTask(final String ticket) throws ConnectionException {
-        try {
-            connectionService.confirmTask(ticket);
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public MobeelizerOperationError confirmTask(final String ticket) {
+        return connectionService.confirmTask(ticket);
     }
 
     @Override
-    public void registerForRemoteNotifications(final String token) throws ConnectionException {
-        try {
-            connectionService.registerForRemoteNotifications(token);
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public MobeelizerOperationError registerForRemoteNotifications(final String token) {
+        return connectionService.registerForRemoteNotifications(token);
     }
 
     @Override
-    public void unregisterForRemoteNotifications(final String token) throws ConnectionException {
-        try {
-            connectionService.unregisterForRemoteNotifications(token);
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public MobeelizerOperationError unregisterForRemoteNotifications(final String token) {
+        return connectionService.unregisterForRemoteNotifications(token);
     }
 
     @Override
-    public void sendRemoteNotification(final String device, final String group, final List<String> users,
-            final Map<String, String> notification) throws ConnectionException {
-        try {
-            connectionService.sendRemoteNotification(device, group, users, notification);
-        } catch (IOException e) {
-            throw new ConnectionException(e.getMessage(), e);
-        }
+    public MobeelizerOperationError sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification) {
+        return connectionService.sendRemoteNotification(device, group, users, notification);
     }
 
     @Override
@@ -322,20 +285,6 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
 
         HttpHost proxy = new HttpHost(proxyHost, proxyPort);
         ConnRouteParams.setDefaultProxy(request.getParams(), proxy);
-    }
-
-    public static class ConnectionException extends Exception {
-
-        private static final long serialVersionUID = 8495472053163912742L;
-
-        public ConnectionException(final String message) {
-            super(message);
-        }
-
-        public ConnectionException(final String message, final Throwable throwable) {
-            super(message, throwable);
-        }
-
     }
 
 }

@@ -28,6 +28,7 @@ import java.io.InputStream;
 import android.content.Context;
 import android.util.Log;
 
+import com.mobeelizer.java.api.MobeelizerOperationError;
 import com.mobeelizer.java.sync.MobeelizerInputData;
 import com.mobeelizer.java.sync.MobeelizerJsonEntity;
 import com.mobeelizer.java.sync.MobeelizerOutputData;
@@ -42,7 +43,7 @@ class MobeelizerDataFileService {
         this.application = application;
     }
 
-    boolean processInputFile(final File inputFile, final boolean isAllSynchronization) {
+    MobeelizerOperationError processInputFile(final File inputFile, final boolean isAllSynchronization) {
         MobeelizerInputData inputData = null;
 
         try {
@@ -55,14 +56,14 @@ class MobeelizerDataFileService {
                     isAllSynchronization);
 
             if (!isSuccessful) {
-                return false;
+                return MobeelizerOperationError.inputFileError();
             }
 
             application.getFileService().deleteFilesFromSync(inputData.getDeletedFiles());
 
-            return true;
+            return null;
         } catch (IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
+            return MobeelizerOperationError.ioError(e);
         } finally {
             if (inputData != null) {
                 inputData.close();

@@ -21,10 +21,12 @@
 package com.mobeelizer.mobile.android;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import com.mobeelizer.mobile.android.MobeelizerRealConnectionManager.ConnectionException;
+import com.mobeelizer.java.api.MobeelizerOperationError;
+import com.mobeelizer.java.api.MobeelizerOperationStatus;
 
 interface MobeelizerConnectionManager {
 
@@ -32,21 +34,21 @@ interface MobeelizerConnectionManager {
 
     MobeelizerLoginResponse login();
 
-    String sendSyncAllRequest() throws ConnectionException;
+    MobeelizerOperationStatus<String> sendSyncAllRequest();
 
-    String sendSyncDiffRequest(final File outputFile) throws ConnectionException;
+    MobeelizerOperationStatus<String> sendSyncDiffRequest(final File outputFile);
 
-    boolean waitUntilSyncRequestComplete(final String ticket) throws ConnectionException;
+    MobeelizerOperationError waitUntilSyncRequestComplete(final String ticket);
 
-    File getSyncData(final String ticket) throws ConnectionException;
+    File getSyncData(final String ticket) throws IOException;
 
-    void confirmTask(final String ticket) throws ConnectionException;
+    MobeelizerOperationError confirmTask(final String ticket);
 
-    void registerForRemoteNotifications(final String registrationId) throws ConnectionException;
+    MobeelizerOperationError registerForRemoteNotifications(final String registrationId);
 
-    void unregisterForRemoteNotifications(final String remoteNotificationToken) throws ConnectionException;
+    MobeelizerOperationError unregisterForRemoteNotifications(final String remoteNotificationToken);
 
-    void sendRemoteNotification(final String device, final String group, final List<String> users,
-            final Map<String, String> notification) throws ConnectionException;
+    MobeelizerOperationError sendRemoteNotification(final String device, final String group, final List<String> users,
+            final Map<String, String> notification);
 
 }

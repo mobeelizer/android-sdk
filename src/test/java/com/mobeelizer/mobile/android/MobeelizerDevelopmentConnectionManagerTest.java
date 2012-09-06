@@ -29,8 +29,6 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.mobeelizer.mobile.android.api.MobeelizerLoginStatus;
-
 public class MobeelizerDevelopmentConnectionManagerTest {
 
     private MobeelizerDevelopmentConnectionManager connectionManager;
@@ -47,7 +45,7 @@ public class MobeelizerDevelopmentConnectionManagerTest {
 
         // then
         assertEquals("role", login.getRole());
-        assertEquals(MobeelizerLoginStatus.OK, login.getStatus());
+        assertEquals(null, login.getError());
         assertFalse(login.isInitialSyncRequired());
     }
 
