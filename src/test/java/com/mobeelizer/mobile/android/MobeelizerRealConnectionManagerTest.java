@@ -58,7 +58,6 @@ import android.util.Log;
 
 import com.mobeelizer.java.connection.MobeelizerConnectionServiceImpl;
 
-// TODO MASZ fix test
 @Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MobeelizerRealConnectionManager.class, Log.class, DefaultHttpClient.class, HttpGet.class, HttpPost.class,
