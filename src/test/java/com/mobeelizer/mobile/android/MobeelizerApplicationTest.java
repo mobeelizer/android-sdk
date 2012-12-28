@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -221,13 +222,15 @@ public class MobeelizerApplicationTest {
         MobeelizerApplication.createApplication(mobeelizer);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void shouldCreateFailIfDeviceIdNotSet() throws Exception {
+    public void shouldCreateWitUUIDIfDeviceIdNotSet() throws Exception {
         // given
         when(telephonyManager.getDeviceId()).thenReturn(null);
 
         // when
-        MobeelizerApplication.createApplication(mobeelizer);
+        MobeelizerApplication application = MobeelizerApplication.createApplication(mobeelizer);
+        
+        //then
+        assertNotNull(UUID.fromString(application.getDeviceIdentifier()));
     }
 
     @Test

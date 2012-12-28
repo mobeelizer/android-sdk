@@ -22,6 +22,11 @@ package com.mobeelizer.mobile.android;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.UUID;
+import java.io.File;
+import java.io.FileOutputStream;
+
+import java.io.RandomAccessFile;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -71,6 +76,8 @@ public class MobeelizerApplication {
     private static final String META_MODE = "MOBEELIZER_MODE";
 
     private static final String META_DEVELOPMENT_ROLE = "MOBEELIZER_DEVELOPMENT_ROLE";
+    
+    private static final String DEVICE_ID_FILE = "DEVICE_IDENTIFIER";
 
     private String vendor;
 
@@ -219,6 +226,10 @@ public class MobeelizerApplication {
 
         deviceIdentifier = ((TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
 
+        if (deviceIdentifier == null) {
+        	deviceIdentifier = getUUIDAsDeviceId();
+        }
+        
         if (deviceIdentifier == null) {
             throw new IllegalStateException("Could to resolve device identifier.");
         }
@@ -544,5 +555,32 @@ public class MobeelizerApplication {
     private InputStream getDefinitionXmlAsset(final Application mobeelizer, final String definitionXml) throws IOException {
         return mobeelizer.getAssets().open(definitionXml);
     }
+    
+    private String getUUIDAsDeviceId(){
+    	String sID = null;
+    	File device_id_file = new File(getContext().getFilesDir(), DEVICE_ID_FILE);
+        try {
+            if (!device_id_file.exists())
+                writeInstallationFile(device_id_file);
+            sID = readInstallationFile(device_id_file);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    	return sID;
+    }
+    
+    private String readInstallationFile(File installation) throws IOException {
+        RandomAccessFile f = new RandomAccessFile(installation, "r");
+        byte[] bytes = new byte[(int) f.length()];
+        f.readFully(bytes);
+        f.close();
+        return new String(bytes);
+    }
 
+    private void writeInstallationFile(File installation) throws IOException {
+        FileOutputStream out = new FileOutputStream(installation);
+        String id = UUID.randomUUID().toString();
+        out.write(id.getBytes());
+        out.close();
+    }
 }
