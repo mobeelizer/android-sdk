@@ -264,11 +264,17 @@ class MobeelizerRealConnectionManager implements MobeelizerConnectionManager {
     }
 
     private boolean isConnecting(final ConnectivityManager connectivityManager) {
+        if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE) == null) {
+			return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting();
+		}
         return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting()
                 || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
     }
 
     private boolean isConnected(final ConnectivityManager connectivityManager) {
+		if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE) == null) {
+			return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected();
+		}
         return connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).isConnected()
                 || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected();
     }
